@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import './App.css';
 
 function AdminDashboard() {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:5001' : 'https://ask-senior.vercel.app');
   const [adminKey, setAdminKey] = useState('');
   const [file, setFile] = useState(null);
   const [job, setJob] = useState(null);
@@ -134,7 +134,7 @@ function AdminDashboard() {
 }
 
 function ChatApp() {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:5001' : 'https://ask-senior.vercel.app');
   const [messages, setMessages] = useState([
     {
       role: 'bot',
