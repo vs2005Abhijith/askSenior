@@ -36,6 +36,10 @@ function AdminDashboard() {
       setError('Select a PDF and enter the admin key.');
       return;
     }
+    if (file.size > 4 * 1024 * 1024) {
+      setError('This Vercel deployment accepts PDFs up to 4 MB. Compress or split the PDF first.');
+      return;
+    }
 
     setError('');
     setIsUploading(true);
@@ -92,7 +96,7 @@ function AdminDashboard() {
             />
             <span className="file-icon">PDF</span>
             <strong>{file ? file.name : 'Choose a PDF file'}</strong>
-            <small>Maximum size: 25 MB</small>
+            <small>Maximum size: 4 MB on Vercel</small>
           </label>
           <label className="admin-key-field">
             <span>Admin key</span>

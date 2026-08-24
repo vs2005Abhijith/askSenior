@@ -117,9 +117,9 @@ async def start_ingestion(
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
     contents = await file.read()
-    max_size = 25 * 1024 * 1024
+    max_size = 4 * 1024 * 1024
     if len(contents) > max_size:
-        raise HTTPException(status_code=413, detail="PDF must be 25 MB or smaller.")
+        raise HTTPException(status_code=413, detail="PDF must be 4 MB or smaller on this deployment.")
 
     job = IngestionJob(
         id=uuid.uuid4().hex,
