@@ -37,8 +37,9 @@ services:
       - key: PINECONE_INDEX_NAME
         value: asksenior
 
-  - type: static_site
+  - type: web
     name: asksenior-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
