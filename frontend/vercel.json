@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://ask-senior.vercel.app/:path*" },
     { "source": "/admin", "destination": "/" },
     { "source": "/admin/", "destination": "/" }
   ]
