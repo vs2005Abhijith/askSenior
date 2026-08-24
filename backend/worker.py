@@ -2,6 +2,7 @@ import hashlib
 import os
 import tempfile
 import time
+import argparse
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -151,9 +152,15 @@ def process_job(job_id):
                 pass
 
 
-def main():
+def main(run_once=False):
     init_db()
     print("askSenior ingestion worker is running.")
+    if run_once:
+        job_id = claim_job()
+        if job_id:
+            process_job(job_id)
+        return
+
     while True:
         job_id = claim_job()
         if job_id:
@@ -163,4 +170,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--once", action="store_true", help="Process available jobs once and exit.")
+    args = parser.parse_args()
+    main(run_once=args.once)
