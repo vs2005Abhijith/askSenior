@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: asksenior-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: asksenior-db
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: asksenior
+      - key: ADMIN_API_KEY
+        sync: false
+
+  - type: worker
+    name: asksenior-ingestion-worker
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python worker.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: asksenior-db
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: asksenior
+
+  - type: static_site
+    name: asksenior-frontend
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: asksenior-api
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: asksenior-db

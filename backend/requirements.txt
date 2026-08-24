@@ -8,6 +8,7 @@ pymupdf
 pinecone-client
 python-dotenv
 pydantic
+python-multipart
 sqlalchemy
 passlib[bcrypt]
 pyjwt

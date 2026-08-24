@@ -11,7 +11,7 @@ import time
 load_dotenv()
 
 # Configuration
-PDF_DIR = "data/pdfs"
+PDF_DIR = os.getenv("PDF_DIR", "data/pdfs")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
 def load_documents(directory: str):

@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
+import uuid
 from dotenv import load_dotenv
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
@@ -9,6 +10,7 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
+from job_queue import IngestionJob, SessionLocal, init_db, job_to_dict
 
 load_dotenv()
 
@@ -32,6 +34,13 @@ class ChatResponse(BaseModel):
 
 # Global variable for the RAG chain
 rag_chain = None
+
+
+def require_admin(admin_key: str | None):
+    configured_key = os.getenv("ADMIN_API_KEY")
+    if not configured_key or admin_key != configured_key:
+        raise HTTPException(status_code=401, detail="Invalid admin key.")
+
 
 def init_chain():
     global rag_chain
@@ -81,6 +90,7 @@ def init_chain():
 # Initialize on startup
 @app.on_event("startup")
 async def startup_event():
+    init_db()
     init_chain()
 
 @app.post("/chat", response_model=ChatResponse)
@@ -95,6 +105,42 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         print(f"Error during chat handling: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/admin/ingest")
+async def start_ingestion(
+    file: UploadFile = File(...),
+    x_admin_key: str | None = Header(default=None),
+):
+    require_admin(x_admin_key)
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    contents = await file.read()
+    max_size = 25 * 1024 * 1024
+    if len(contents) > max_size:
+        raise HTTPException(status_code=413, detail="PDF must be 25 MB or smaller.")
+
+    job = IngestionJob(
+        id=uuid.uuid4().hex,
+        filename=file.filename,
+        pdf_data=contents,
+    )
+    with SessionLocal() as db:
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+        return job_to_dict(job)
+
+
+@app.get("/admin/ingest/{job_id}")
+async def ingestion_status(job_id: str, x_admin_key: str | None = Header(default=None)):
+    require_admin(x_admin_key)
+    with SessionLocal() as db:
+        job = db.get(IngestionJob, job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Ingestion job not found.")
+        return job_to_dict(job)
 
 @app.get("/")
 def read_root():

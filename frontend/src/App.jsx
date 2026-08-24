@@ -2,7 +2,139 @@ import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './App.css';
 
-export default function App() {
+function AdminDashboard() {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  const [adminKey, setAdminKey] = useState('');
+  const [file, setFile] = useState(null);
+  const [job, setJob] = useState(null);
+  const [error, setError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (!job || ['completed', 'failed'].includes(job.status)) return undefined;
+
+    const timer = setInterval(async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/admin/ingest/${job.job_id}`, {
+          headers: { 'X-Admin-Key': adminKey },
+        });
+        if (!response.ok) throw new Error('Could not read ingestion status.');
+        setJob(await response.json());
+      } catch (statusError) {
+        setError(statusError.message);
+      }
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [apiBaseUrl, adminKey, job]);
+
+  const handleUpload = async (event) => {
+    event.preventDefault();
+    if (!file || !adminKey.trim()) {
+      setError('Select a PDF and enter the admin key.');
+      return;
+    }
+
+    setError('');
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/admin/ingest`, {
+        method: 'POST',
+        headers: { 'X-Admin-Key': adminKey.trim() },
+        body: formData,
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.detail || 'Upload failed.');
+      setJob(data);
+      setFile(null);
+      event.target.reset();
+    } catch (uploadError) {
+      setError(uploadError.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const progress = job?.total_chunks
+    ? Math.round((job.completed_chunks / job.total_chunks) * 100)
+    : 0;
+
+  return (
+    <div className="admin-shell">
+      <div className="admin-card">
+        <div className="admin-topbar">
+          <div>
+            <p className="eyebrow">askSenior / control room</p>
+            <h1>Knowledge base</h1>
+            <p className="admin-subtitle">Add trusted KTU notes to the assistant.</p>
+          </div>
+          <button className="text-btn" onClick={() => { window.location.href = '/'; }}>
+            Back to chat
+          </button>
+        </div>
+
+        <form className="upload-panel" onSubmit={handleUpload}>
+          <div className="upload-copy">
+            <span className="upload-kicker">01 / source material</span>
+            <h2>Upload a PDF</h2>
+            <p>It will be extracted, chunked, embedded, and added to Pinecone in the background.</p>
+          </div>
+          <label className="file-drop">
+            <input
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(event) => setFile(event.target.files?.[0] || null)}
+            />
+            <span className="file-icon">PDF</span>
+            <strong>{file ? file.name : 'Choose a PDF file'}</strong>
+            <small>Maximum size: 25 MB</small>
+          </label>
+          <label className="admin-key-field">
+            <span>Admin key</span>
+            <input
+              type="password"
+              value={adminKey}
+              onChange={(event) => setAdminKey(event.target.value)}
+              placeholder="Configured on the backend"
+              autoComplete="off"
+            />
+          </label>
+          <button className="upload-btn" type="submit" disabled={isUploading}>
+            {isUploading ? 'Starting upload...' : 'Start ingestion'}
+          </button>
+        </form>
+
+        {error && <div className="admin-alert error">{error}</div>}
+
+        {job && (
+          <section className="job-card">
+            <div className="job-heading">
+              <div>
+                <span className="upload-kicker">02 / ingestion status</span>
+                <h2>{job.filename}</h2>
+              </div>
+              <span className={`status-pill ${job.status}`}>{job.status}</span>
+            </div>
+            <p>{job.message}</p>
+            <div className="progress-track">
+              <div className="progress-value" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="job-meta">
+              <span>{job.completed_chunks} / {job.total_chunks || '...'} chunks</span>
+              <span>{progress}%</span>
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ChatApp() {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
   const [messages, setMessages] = useState([
     {
       role: 'bot',
@@ -30,7 +162,7 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch(`${apiBaseUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,6 +201,9 @@ export default function App() {
           <h1>askSenior</h1>
           <p>KTU B.Tech CSE Syllabus Assistant</p>
         </div>
+        <button className="text-btn" onClick={() => { window.location.href = '/admin'; }}>
+          Admin
+        </button>
       </div>
 
       <div className="chat-container" ref={scrollRef}>
@@ -115,4 +250,8 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+export default function App() {
+  return window.location.pathname === '/admin' ? <AdminDashboard /> : <ChatApp />;
 }
