@@ -23,6 +23,22 @@ function AdminDashboard() {
   }, [job]);
 
   useEffect(() => {
+    if (job || !adminKey) return undefined;
+
+    fetch(`${apiBaseUrl}/admin/ingest/latest`, {
+      headers: { 'X-Admin-Key': adminKey },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Could not restore ingestion status.');
+        return response.json();
+      })
+      .then(setJob)
+      .catch((statusError) => setError(statusError.message));
+
+    return undefined;
+  }, [apiBaseUrl, adminKey, job]);
+
+  useEffect(() => {
     if (!job || ['completed', 'failed'].includes(job.status)) return undefined;
 
     const timer = setInterval(async () => {

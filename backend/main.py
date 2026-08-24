@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import os
 import uuid
 from dotenv import load_dotenv
+from sqlalchemy import select
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
@@ -130,6 +131,16 @@ async def start_ingestion(
         db.add(job)
         db.commit()
         db.refresh(job)
+        return job_to_dict(job)
+
+
+@app.get("/admin/ingest/latest")
+async def latest_ingestion_status(x_admin_key: str | None = Header(default=None)):
+    require_admin(x_admin_key)
+    with SessionLocal() as db:
+        job = db.scalar(select(IngestionJob).order_by(IngestionJob.created_at.desc()))
+        if not job:
+            raise HTTPException(status_code=404, detail="No ingestion jobs found.")
         return job_to_dict(job)
 
 
