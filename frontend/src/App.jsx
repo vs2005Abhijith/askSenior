@@ -6,11 +6,21 @@ function AdminDashboard() {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
     : '/api';
-  const [adminKey, setAdminKey] = useState('');
+  const [adminKey, setAdminKey] = useState(() => sessionStorage.getItem('askSeniorAdminKey') || '');
   const [file, setFile] = useState(null);
-  const [job, setJob] = useState(null);
+  const [job, setJob] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('askSeniorLatestJob') || 'null');
+    } catch {
+      return null;
+    }
+  });
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (job) localStorage.setItem('askSeniorLatestJob', JSON.stringify(job));
+  }, [job]);
 
   useEffect(() => {
     if (!job || ['completed', 'failed'].includes(job.status)) return undefined;
@@ -103,7 +113,10 @@ function AdminDashboard() {
             <input
               type="password"
               value={adminKey}
-              onChange={(event) => setAdminKey(event.target.value)}
+              onChange={(event) => {
+                setAdminKey(event.target.value);
+                sessionStorage.setItem('askSeniorAdminKey', event.target.value);
+              }}
               placeholder="Configured on the backend"
               autoComplete="off"
             />
