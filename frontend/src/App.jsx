@@ -238,9 +238,6 @@ function ChatApp() {
           <h1>askSenior</h1>
           <p>KTU B.Tech CSE Syllabus Assistant</p>
         </div>
-        <button className="text-btn" onClick={() => { window.location.href = '/admin'; }}>
-          Admin
-        </button>
       </div>
 
       <div className="chat-container" ref={scrollRef}>
@@ -290,5 +287,6 @@ function ChatApp() {
 }
 
 export default function App() {
-  return window.location.pathname === '/admin' ? <AdminDashboard /> : <ChatApp />;
+  // Admin ingestion is paused while the Neon-backed queue is disabled.
+  return <ChatApp />;
 }

@@ -37,6 +37,7 @@ class ChatResponse(BaseModel):
 rag_chain = None
 rag_error = None
 database_error = None
+admin_ingestion_enabled = os.getenv("ENABLE_ADMIN_INGESTION", "false").lower() == "true"
 
 
 def require_admin(admin_key: str | None):
@@ -96,20 +97,23 @@ def init_chain():
 @app.on_event("startup")
 async def startup_event():
     global database_error
-    try:
-        init_db()
-        database_error = None
-    except Exception as e:
-        database_error = str(e)
-        print(f"Error initializing database: {e}")
+    if admin_ingestion_enabled:
+        try:
+            init_db()
+            database_error = None
+        except Exception as e:
+            database_error = str(e)
+            print(f"Error initializing database: {e}")
+    else:
+        database_error = "Admin ingestion is temporarily disabled."
     init_chain()
 
 
 def require_database():
-    if database_error:
+    if not admin_ingestion_enabled or database_error:
         raise HTTPException(
             status_code=503,
-            detail="Database is unavailable. Check DATABASE_URL in the Vercel backend project.",
+            detail="Admin ingestion is temporarily disabled.",
         )
 
 @app.post("/chat", response_model=ChatResponse)
@@ -183,4 +187,5 @@ def read_root():
         "rag_error": rag_error,
         "database_ready": database_error is None,
         "database_error": database_error,
+        "admin_ingestion_enabled": admin_ingestion_enabled,
     }
