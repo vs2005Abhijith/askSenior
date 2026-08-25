@@ -8,3 +8,12 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// Let the first app frame render before fading out the static loader.
+requestAnimationFrame(() => {
+  const preloader = document.getElementById('preloader')
+  if (!preloader) return
+
+  preloader.classList.add('preloader-hidden')
+  window.setTimeout(() => preloader.remove(), 450)
+})
