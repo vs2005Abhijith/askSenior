@@ -7,7 +7,10 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 load_dotenv()
 
-database_url = os.getenv("DATABASE_URL", "sqlite:///./asksenior.db")
+# Vercel secrets are sometimes pasted with shell quotes. Remove them before
+# handing the URL to SQLAlchemy so startup does not fail on a valid Neon URL.
+database_url = (os.getenv("DATABASE_URL") or "sqlite:///./asksenior.db").strip()
+database_url = database_url.strip("'").strip('"')
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
 elif database_url.startswith("postgresql://"):

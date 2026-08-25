@@ -36,6 +36,7 @@ class ChatResponse(BaseModel):
 # Global variable for the RAG chain
 rag_chain = None
 rag_error = None
+database_error = None
 
 
 def require_admin(admin_key: str | None):
@@ -94,8 +95,22 @@ def init_chain():
 # Initialize on startup
 @app.on_event("startup")
 async def startup_event():
-    init_db()
+    global database_error
+    try:
+        init_db()
+        database_error = None
+    except Exception as e:
+        database_error = str(e)
+        print(f"Error initializing database: {e}")
     init_chain()
+
+
+def require_database():
+    if database_error:
+        raise HTTPException(
+            status_code=503,
+            detail="Database is unavailable. Check DATABASE_URL in the Vercel backend project.",
+        )
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
@@ -117,6 +132,7 @@ async def start_ingestion(
     x_admin_key: str | None = Header(default=None),
 ):
     require_admin(x_admin_key)
+    require_database()
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
@@ -140,6 +156,7 @@ async def start_ingestion(
 @app.get("/admin/ingest/latest")
 async def latest_ingestion_status(x_admin_key: str | None = Header(default=None)):
     require_admin(x_admin_key)
+    require_database()
     with SessionLocal() as db:
         job = db.scalar(select(IngestionJob).order_by(IngestionJob.created_at.desc()))
         if not job:
@@ -150,6 +167,7 @@ async def latest_ingestion_status(x_admin_key: str | None = Header(default=None)
 @app.get("/admin/ingest/{job_id}")
 async def ingestion_status(job_id: str, x_admin_key: str | None = Header(default=None)):
     require_admin(x_admin_key)
+    require_database()
     with SessionLocal() as db:
         job = db.get(IngestionJob, job_id)
         if not job:
@@ -163,4 +181,6 @@ def read_root():
         "message": "askSenior API is running.",
         "rag_initialized": rag_chain is not None,
         "rag_error": rag_error,
+        "database_ready": database_error is None,
+        "database_error": database_error,
     }
