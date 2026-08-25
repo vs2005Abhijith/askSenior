@@ -310,13 +310,13 @@
 .app-disclaimer {
   max-width: 760px;
   margin-top: 7px;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  line-height: 1.45;
+  color: #b42318;
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .app-disclaimer strong {
-  color: var(--accent-hover);
+  color: #991b1b;
 }
 
 .logout-btn {
