@@ -257,8 +257,8 @@
 }
 
 .account-avatar {
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   border: 2px solid rgba(102, 57, 156, 0.22);
   border-radius: 50%;
   object-fit: cover;
