@@ -25,7 +25,7 @@
   z-index: 0;
   content: '';
   pointer-events: none;
-  background: url('/asksenior-logo.png') center 52% / min(460px, 65vw) auto no-repeat;
+  background: url('/asksenior-logo.jpeg') center 52% / min(460px, 65vw) auto no-repeat;
   opacity: 0.045;
   filter: grayscale(0.15);
 }

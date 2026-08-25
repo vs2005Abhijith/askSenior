@@ -32,7 +32,7 @@ function AuthScreen() {
     <main className="auth-container">
       <section className="auth-card">
         <div className="auth-header">
-          <img className="auth-logo" src="/asksenior-logo.png" alt="askSenior" />
+          <img className="auth-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
           <p>KTU B.Tech CSE Syllabus Assistant</p>
         </div>
         {!firebaseConfigured ? (
@@ -287,7 +287,7 @@ function ChatApp({ user }) {
     <div className="app-container">
       <div className="header chat-header">
         <div>
-          <img className="brand-logo" src="/asksenior-logo.png" alt="askSenior" />
+          <img className="brand-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
           <p>KTU B.Tech CSE Syllabus Assistant</p>
           <p className="app-disclaimer">
             <strong>Note:</strong> This app is not trained on the complete KTU syllabus. It currently covers DBMS (S4, KTU), OS - Disk Scheduling (S4, KTU), and CN (Text 2, S5, KTU). The content is based on the corresponding KTU textbooks.
