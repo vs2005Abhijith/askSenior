@@ -1,6 +1,52 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { auth, firebaseConfigured, googleProvider } from './firebase';
 import './App.css';
+
+function AuthScreen() {
+  const [error, setError] = useState('');
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setIsSigningIn(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (signInError) {
+      if (signInError.code !== 'auth/popup-closed-by-user') {
+        setError('Google sign-in could not be completed. Please try again.');
+      }
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  return (
+    <main className="auth-container">
+      <section className="auth-card">
+        <div className="auth-header">
+          <img className="auth-logo" src="/asksenior-logo.png" alt="askSenior" />
+          <p>KTU B.Tech CSE Syllabus Assistant</p>
+        </div>
+        {!firebaseConfigured ? (
+          <div className="auth-error">
+            Google sign-in is not configured yet. Add the Firebase Vercel environment variables to continue.
+          </div>
+        ) : (
+          <>
+            {error && <div className="auth-error">{error}</div>}
+            <button className="google-signin" onClick={handleGoogleSignIn} disabled={isSigningIn}>
+              <span className="google-mark">G</span>
+              {isSigningIn ? 'Opening Google...' : 'Continue with Google'}
+            </button>
+            <p className="auth-footer">Sign in to keep your study space personal.</p>
+          </>
+        )}
+      </section>
+    </main>
+  );
+}
 
 function AdminDashboard() {
   const apiBaseUrl = import.meta.env.DEV
@@ -168,7 +214,7 @@ function AdminDashboard() {
   );
 }
 
-function ChatApp() {
+function ChatApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
     : '/api';
@@ -238,6 +284,10 @@ function ChatApp() {
           <img className="brand-logo" src="/asksenior-logo.png" alt="askSenior" />
           <p>KTU B.Tech CSE Syllabus Assistant</p>
         </div>
+        <div className="account-area">
+          {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+        </div>
       </div>
 
       <div className="chat-container" ref={scrollRef}>
@@ -288,5 +338,15 @@ function ChatApp() {
 
 export default function App() {
   // Admin ingestion is paused while the Neon-backed queue is disabled.
-  return <ChatApp />;
+  const [user, setUser] = useState(() => (firebaseConfigured ? undefined : null));
+
+  useEffect(() => {
+    if (!firebaseConfigured) return undefined;
+
+    return onAuthStateChanged(auth, setUser);
+  }, []);
+
+  if (user === undefined) return null;
+  if (!user) return <AuthScreen />;
+  return <ChatApp user={user} />;
 }
