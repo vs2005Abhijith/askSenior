@@ -35,6 +35,7 @@ class ChatResponse(BaseModel):
 
 # Global variable for the RAG chain
 rag_chain = None
+rag_error = None
 
 
 def require_admin(admin_key: str | None):
@@ -44,7 +45,7 @@ def require_admin(admin_key: str | None):
 
 
 def init_chain():
-    global rag_chain
+    global rag_chain, rag_error
     try:
         index_name = os.getenv("PINECONE_INDEX_NAME")
         if not index_name:
@@ -83,9 +84,11 @@ def init_chain():
         # 4. Create chains
         question_answer_chain = create_stuff_documents_chain(llm, prompt)
         rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+        rag_error = None
         print("RAG Chain initialized successfully!")
 
     except Exception as e:
+        rag_error = str(e)
         print(f"Error initializing chain: {e}")
 
 # Initialize on startup
@@ -97,7 +100,7 @@ async def startup_event():
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     if rag_chain is None:
-        raise HTTPException(status_code=500, detail="Backend is not fully initialized. Check API keys and vector db.")
+        return ChatResponse(reply="The assistant is still initializing. Check the backend environment variables and try again shortly.")
     
     try:
         # Invoke LangChain RAG pipeline
@@ -105,7 +108,7 @@ async def chat_endpoint(request: ChatRequest):
         return ChatResponse(reply=response.get("answer", "I could not generate an answer."))
     except Exception as e:
         print(f"Error during chat handling: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return ChatResponse(reply="The assistant could not complete that request. Please try again shortly.")
 
 
 @app.post("/admin/ingest")
@@ -155,4 +158,9 @@ async def ingestion_status(job_id: str, x_admin_key: str | None = Header(default
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "askSenior API is running."}
+    return {
+        "status": "ok",
+        "message": "askSenior API is running.",
+        "rag_initialized": rag_chain is not None,
+        "rag_error": rag_error,
+    }
