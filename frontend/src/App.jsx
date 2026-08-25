@@ -235,7 +235,7 @@ function ChatApp() {
     <div className="app-container">
       <div className="header chat-header">
         <div>
-          <h1>askSenior</h1>
+          <img className="brand-logo" src="/asksenior-logo.png" alt="askSenior" />
           <p>KTU B.Tech CSE Syllabus Assistant</p>
         </div>
       </div>

@@ -176,6 +176,16 @@
   padding: 20px 24px;
 }
 
+.brand-logo {
+  display: block;
+  width: min(260px, 58vw);
+  height: auto;
+  max-height: 92px;
+  object-fit: contain;
+  object-position: left center;
+  margin-bottom: 4px;
+}
+
 .logout-btn {
   background: transparent;
   color: var(--text-muted);
