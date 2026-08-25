@@ -257,11 +257,11 @@
 }
 
 .message {
-  max-width: 85%;
-  padding: 16px 20px;
+  max-width: min(720px, 76%);
+  padding: 12px 16px;
   border-radius: 20px;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 1.5;
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -283,6 +283,12 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom-left-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  .message {
+    max-width: 90%;
+  }
 }
 
 .markdown-content p {
