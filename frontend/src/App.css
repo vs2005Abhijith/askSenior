@@ -9,7 +9,7 @@
   background: var(--bg-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 40px rgba(80, 48, 116, 0.08);
   border-left: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
   position: relative;
@@ -63,7 +63,7 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 8px;
-  color: white;
+  color: var(--text-main);
 }
 
 .auth-header p {
@@ -105,10 +105,10 @@
 .input-group input, 
 .input-box input {
   padding: 14px 16px;
-  background: rgba(15, 23, 42, 0.6);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  color: white;
+  color: var(--text-main);
   font-family: inherit;
   font-size: 1rem;
   transition: all 0.2s ease;
@@ -119,7 +119,7 @@
   outline: none;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px var(--accent-glow);
-  background: rgba(15, 23, 42, 0.8);
+  background: #ffffff;
 }
 
 .auth-submit {
@@ -172,7 +172,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(255, 255, 255, 0.82);
   padding: 20px 24px;
 }
 
@@ -208,7 +208,7 @@
   width: 6px;
 }
 .chat-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(102, 57, 156, 0.18);
   border-radius: 10px;
 }
 
@@ -241,7 +241,7 @@
 }
 
 .message.user {
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  background: linear-gradient(135deg, #7545ad, var(--accent-color));
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -262,18 +262,18 @@
 
 .markdown-content strong {
   font-weight: 700;
-  color: white;
+  color: var(--accent-hover);
 }
 
 .input-container {
   padding: 20px 24px;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(255, 255, 255, 0.84);
   border-top: 1px solid var(--border-color);
 }
 
 .input-box {
   display: flex;
-  background: rgba(30, 41, 59, 0.8);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 24px;
   padding: 6px 10px;
@@ -285,7 +285,7 @@
   background: transparent;
   border: none;
   outline: none;
-  color: white;
+  color: var(--text-main);
   padding: 10px 14px;
 }
 
@@ -319,14 +319,14 @@
   min-height: 100vh;
   width: 100%;
   padding: 5vw;
-  background: radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.13), transparent 30%), var(--bg-dark);
+  background: radial-gradient(circle at 80% 10%, rgba(102, 57, 156, 0.11), transparent 30%), var(--bg-dark);
 }
 
 .admin-card {
   width: min(100%, 920px);
   margin: 0 auto;
   padding: clamp(24px, 5vw, 56px);
-  background: rgba(30, 41, 59, 0.72);
+  background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--border-color);
   border-radius: 28px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
@@ -374,7 +374,7 @@
 }
 
 .text-btn:hover {
-  color: white;
+  color: var(--accent-hover);
   border-color: var(--accent-color);
 }
 
@@ -382,7 +382,7 @@
 .job-card {
   margin-top: 40px;
   padding: clamp(20px, 4vw, 32px);
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(248, 245, 251, 0.9);
   border: 1px solid var(--border-color);
   border-radius: 20px;
 }
@@ -401,14 +401,14 @@
   margin: 26px 0 18px;
   padding: 24px;
   text-align: center;
-  border: 1px dashed rgba(56, 189, 248, 0.5);
+  border: 1px dashed rgba(102, 57, 156, 0.45);
   border-radius: 16px;
-  background: rgba(56, 189, 248, 0.05);
+  background: rgba(102, 57, 156, 0.04);
   cursor: pointer;
 }
 
 .file-drop:hover {
-  background: rgba(56, 189, 248, 0.1);
+  background: rgba(102, 57, 156, 0.09);
 }
 
 .file-drop input {
@@ -442,8 +442,8 @@
 .admin-key-field input {
   width: 100%;
   padding: 13px 14px;
-  color: white;
-  background: rgba(15, 23, 42, 0.8);
+  color: var(--text-main);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 10px;
   font: inherit;

@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-dark: #0f172a;
-  --bg-card: rgba(30, 41, 59, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-glow: rgba(56, 189, 248, 0.5);
-  --accent-color: #38bdf8;
-  --accent-hover: #0ea5e9;
-  --bot-msg-bg: rgba(51, 65, 85, 0.6);
+  --bg-dark: #faf9fc;
+  --bg-card: #ffffff;
+  --border-color: rgba(86, 51, 137, 0.14);
+  --text-main: #292331;
+  --text-muted: #756d7e;
+  --accent-glow: rgba(102, 57, 156, 0.2);
+  --accent-color: #66399c;
+  --accent-hover: #512b80;
+  --bot-msg-bg: #f1edf6;
   --glass-blur: blur(12px);
 }
 
@@ -27,9 +27,9 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(102, 57, 156, 0.08), transparent 28%),
+    radial-gradient(circle at 88% 76%, rgba(126, 126, 126, 0.08), transparent 26%);
 }
 
 #root {
