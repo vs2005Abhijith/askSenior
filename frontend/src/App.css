@@ -236,6 +236,7 @@
 
 /* Chat Layout Restructure */
 .chat-header {
+  position: relative;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -243,13 +244,16 @@
   background: rgba(255, 255, 255, 0.48);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  padding: 20px 24px;
+  padding: 20px 190px 20px 24px;
 }
 
 .account-area {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: absolute;
+  top: 18px;
+  right: 24px;
 }
 
 .account-avatar {
@@ -275,6 +279,22 @@
 .signout-btn:hover {
   color: var(--accent-hover);
   border-color: var(--accent-color);
+}
+
+@media (max-width: 600px) {
+  .chat-header {
+    padding-right: 150px;
+  }
+
+  .account-area {
+    top: 14px;
+    right: 14px;
+  }
+
+  .signout-btn {
+    padding: 7px 9px;
+    font-size: 0.72rem;
+  }
 }
 
 .brand-logo {
