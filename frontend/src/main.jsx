@@ -17,5 +17,5 @@ requestAnimationFrame(() => {
   window.setTimeout(() => {
     preloader.classList.add('preloader-hidden')
     window.setTimeout(() => preloader.remove(), 450)
-  }, 1500)
+  }, 2500)
 })
