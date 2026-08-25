@@ -307,6 +307,18 @@
   margin-bottom: 4px;
 }
 
+.app-disclaimer {
+  max-width: 760px;
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.app-disclaimer strong {
+  color: var(--accent-hover);
+}
+
 .logout-btn {
   background: transparent;
   color: var(--text-muted);
