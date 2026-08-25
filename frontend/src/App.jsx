@@ -15,7 +15,13 @@ function AuthScreen() {
       await signInWithPopup(auth, googleProvider);
     } catch (signInError) {
       if (signInError.code !== 'auth/popup-closed-by-user') {
-        setError('Google sign-in could not be completed. Please try again.');
+        const errorMessages = {
+          'auth/unauthorized-domain': 'Add this Vercel domain in Firebase Authentication > Settings > Authorized domains.',
+          'auth/popup-blocked': 'Allow popups for this site, then try Google sign-in again.',
+          'auth/operation-not-allowed': 'Enable Google as a sign-in provider in Firebase Authentication.',
+          'auth/network-request-failed': 'Check your internet connection and try again.',
+        };
+        setError(errorMessages[signInError.code] || 'Google sign-in could not be completed. Please try again.');
       }
     } finally {
       setIsSigningIn(false);
