@@ -6,14 +6,33 @@
   height: 100vh;
   width: 100vw;
   max-width: 900px;
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.62);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: 0 0 40px rgba(80, 48, 116, 0.08);
   border-left: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
   position: relative;
   z-index: 10;
+}
+
+.app-container::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: '';
+  pointer-events: none;
+  background: url('/asksenior-logo.png') center 52% / min(460px, 65vw) auto no-repeat;
+  opacity: 0.045;
+  filter: grayscale(0.15);
+}
+
+.app-container > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Authentication Screens */
@@ -172,7 +191,9 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   padding: 20px 24px;
 }
 
@@ -257,8 +278,10 @@
 }
 
 .message.bot {
-  background: var(--bot-msg-bg);
-  border: 1px solid var(--border-color);
+  background: rgba(241, 237, 246, 0.62);
+  border: 1px solid rgba(102, 57, 156, 0.16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom-left-radius: 4px;
 }
 
@@ -277,16 +300,21 @@
 
 .input-container {
   padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.84);
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-top: 1px solid var(--border-color);
 }
 
 .input-box {
   display: flex;
-  background: #ffffff;
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(102, 57, 156, 0.18);
   border-radius: 24px;
   padding: 6px 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 10px 30px rgba(80, 48, 116, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   transition: all 0.3s;
 }
 
