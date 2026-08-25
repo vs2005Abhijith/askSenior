@@ -290,7 +290,7 @@ function ChatApp({ user }) {
           <img className="brand-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
           <p>KTU B.Tech CSE Syllabus Assistant</p>
           <p className="app-disclaimer">
-            <strong>Note:</strong> This app is not trained on the complete KTU syllabus. It currently covers DBMS (S4, KTU), OS - Disk Scheduling (S4, KTU), and CN (Text 2, S5, KTU). The content is based on the corresponding KTU textbooks.
+            <strong>Note:</strong> This webapp is not trained on the complete KTU syllabus. It currently covers DBMS (S4, KTU), OS - Disk Scheduling (S4, KTU), and CN ( S5, KTU). The content is based on the corresponding KTU textbooks.
           </p>
         </div>
         <div className="account-area">
