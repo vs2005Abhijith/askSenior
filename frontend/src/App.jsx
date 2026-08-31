@@ -340,6 +340,13 @@ function ChatApp({ user }) {
             </svg>
           </button>
         </form>
+        <footer className="app-footer">
+          <span>Developed by Abhijith V S, S5 CSE, RIT Kottayam</span>
+          <span className="footer-links">
+            <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="mailto:vsabhijithin17@gmail.com">vsabhijithin17@gmail.com</a>
+          </span>
+        </footer>
       </div>
     </div>
   );

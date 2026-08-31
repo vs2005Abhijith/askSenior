@@ -461,6 +461,33 @@
   padding: 10px 14px;
 }
 
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.footer-links {
+  display: flex;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.app-footer a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
 .send-btn {
   background: var(--accent-color);
   color: white;
@@ -714,5 +741,16 @@
 
   .input-container {
     padding: 12px 14px;
+  }
+
+  .app-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.62rem;
+  }
+
+  .footer-links {
+    gap: 10px;
   }
 }
