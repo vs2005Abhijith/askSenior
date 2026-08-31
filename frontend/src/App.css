@@ -766,4 +766,8 @@
   .footer-links {
     gap: 10px;
   }
+
+  .input-container:focus-within .app-footer {
+    display: none;
+  }
 }
