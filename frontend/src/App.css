@@ -283,7 +283,7 @@
 
 @media (max-width: 600px) {
   .chat-header {
-    padding-right: 150px;
+    padding: 14px 14px 16px;
   }
 
   .account-area {
@@ -317,6 +317,16 @@
 
 .app-disclaimer strong {
   color: #991b1b;
+}
+
+@media (max-width: 600px) {
+  .brand-logo {
+    width: min(175px, 52vw);
+  }
+
+  .app-disclaimer {
+    font-size: 0.75rem;
+  }
 }
 
 .logout-btn {
@@ -438,6 +448,7 @@
 
 .input-box input {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
