@@ -247,6 +247,7 @@ function ChatApp({ user }) {
 
     const userMessage = input.trim();
     setInput('');
+    e?.currentTarget?.querySelector('input')?.blur();
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
     setIsLoading(true);
 
