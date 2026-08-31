@@ -468,8 +468,8 @@
   gap: 16px;
   margin: 18px -24px -20px;
   padding: 24px;
-  color: rgba(255, 255, 255, 0.88);
-  background: #643292;
+  color: #30233b;
+  background: linear-gradient(110deg, #ffffff 0%, #f8f2fc 35%, #613291 100%);
   font-size: 0.82rem;
   line-height: 1.4;
 }
@@ -484,12 +484,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #ffffff;
+  color: #613291;
   text-decoration: none;
 }
 
 .app-footer a:hover {
-  color: #eadcff;
+  color: #351957;
   text-decoration: underline;
 }
 
@@ -760,6 +760,7 @@
     margin: 14px -14px -12px;
     padding: 20px 14px;
     font-size: 0.74rem;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f2fc 42%, #613291 100%);
   }
 
   .footer-links {

@@ -341,7 +341,7 @@ function ChatApp({ user }) {
           </button>
         </form>
         <footer className="app-footer">
-          <span>Developed by Abhijith V S, S5 CSE, RIT Kottayam</span>
+          <span>&copy; 2026 Abhijith V S, S5 CSE, RIT Kottayam</span>
           <span className="footer-links">
             <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer">
               <svg className="linkedin-icon" viewBox="0 0 24 24" aria-hidden="true">
