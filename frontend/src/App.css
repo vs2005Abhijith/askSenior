@@ -308,12 +308,11 @@
 }
 
 .app-disclaimer {
-  max-width: none;
+  max-width: 760px;
   margin-top: 7px;
   color: #b42318;
   font-size: 0.82rem;
   line-height: 1.5;
-  white-space: nowrap;
 }
 
 .app-disclaimer strong {
@@ -688,10 +687,6 @@
 }
 
 @media (max-width: 600px) {
-  .app-disclaimer {
-    white-space: normal;
-  }
-
   .admin-topbar,
   .job-heading {
     flex-direction: column;
