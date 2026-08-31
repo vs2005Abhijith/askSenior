@@ -466,9 +466,11 @@
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-top: 10px;
-  color: var(--text-muted);
-  font-size: 0.68rem;
+  margin: 18px -24px -20px;
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.88);
+  background: #643292;
+  font-size: 0.82rem;
   line-height: 1.4;
 }
 
@@ -479,13 +481,21 @@
 }
 
 .app-footer a {
-  color: var(--accent-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
   text-decoration: none;
 }
 
 .app-footer a:hover {
-  color: var(--accent-hover);
+  color: #eadcff;
   text-decoration: underline;
+}
+
+.linkedin-icon {
+  width: 21px;
+  height: 21px;
 }
 
 .send-btn {
@@ -746,8 +756,10 @@
   .app-footer {
     align-items: flex-start;
     flex-direction: column;
-    gap: 5px;
-    font-size: 0.62rem;
+    gap: 8px;
+    margin: 14px -14px -12px;
+    padding: 20px 14px;
+    font-size: 0.74rem;
   }
 
   .footer-links {

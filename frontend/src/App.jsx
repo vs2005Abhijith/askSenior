@@ -343,7 +343,12 @@ function ChatApp({ user }) {
         <footer className="app-footer">
           <span>Developed by Abhijith V S, S5 CSE, RIT Kottayam</span>
           <span className="footer-links">
-            <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer">
+              <svg className="linkedin-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M5.2 7.2A2.2 2.2 0 1 0 5.2 2.8a2.2 2.2 0 0 0 0 4.4ZM3.3 21.2h3.8V9.1H3.3v12.1ZM9.5 9.1v12.1h3.8v-6c0-1.6.3-3.2 2.3-3.2 1.9 0 1.9 1.9 1.9 3.3v5.9h3.8v-6.7c0-3.3-.7-5.8-4.7-5.8-1.9 0-3.2 1-3.7 2h-.1V9.1H9.5Z" />
+              </svg>
+              LinkedIn
+            </a>
             <a href="mailto:vsabhijithin17@gmail.com">vsabhijithin17@gmail.com</a>
           </span>
         </footer>
