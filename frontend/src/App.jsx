@@ -232,7 +232,10 @@ function ChatApp({ user }) {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceMessage, setVoiceMessage] = useState('');
   const scrollRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -240,6 +243,46 @@ function ChatApp({ user }) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  useEffect(() => () => recognitionRef.current?.stop(), []);
+
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setVoiceMessage('Voice input is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onstart = () => {
+      setVoiceMessage('Listening...');
+      setIsListening(true);
+    };
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(' ');
+      setInput(transcript);
+    };
+    recognition.onerror = () => {
+      setVoiceMessage('Microphone input could not be captured.');
+      setIsListening(false);
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+      setVoiceMessage('');
+    };
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
 
   const handleSend = async (e) => {
     e?.preventDefault();
@@ -331,6 +374,19 @@ function ChatApp({ user }) {
             disabled={isLoading}
           />
           <button
+            type="button"
+            className={`voice-btn ${isListening ? 'listening' : ''}`}
+            onClick={toggleVoiceInput}
+            disabled={isLoading}
+            aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+            title={isListening ? 'Stop listening' : 'Use voice input'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+              <path d="M5 10a7 7 0 0 0 14 0M12 19v3M8 22h8"></path>
+            </svg>
+          </button>
+          <button
             type="submit"
             className="send-btn"
             disabled={isLoading || !input.trim()}
@@ -341,6 +397,7 @@ function ChatApp({ user }) {
             </svg>
           </button>
         </form>
+        {voiceMessage && <div className="voice-status" role="status">{voiceMessage}</div>}
         <footer className="app-footer">
           <span>&copy; Abhijith V S, S5 CSE, RIT Kottayam</span>
           <span className="footer-links">
