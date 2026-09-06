@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import json
 import os
 import uuid
 from dotenv import load_dotenv
@@ -33,11 +34,32 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
 
+
+class QuizRequest(BaseModel):
+    subject: str
+    topic: str
+    question_count: int = 5
+
+
+class QuizQuestion(BaseModel):
+    question: str
+    options: list[str]
+    answer_index: int
+    explanation: str
+
+
+class QuizResponse(BaseModel):
+    subject: str
+    topic: str
+    questions: list[QuizQuestion]
+
 # Global variable for the RAG chain
 rag_chain = None
 rag_error = None
 database_error = None
 admin_ingestion_enabled = os.getenv("ENABLE_ADMIN_INGESTION", "false").lower() == "true"
+quiz_llm = None
+quiz_retriever = None
 
 
 def require_admin(admin_key: str | None):
@@ -47,7 +69,7 @@ def require_admin(admin_key: str | None):
 
 
 def init_chain():
-    global rag_chain, rag_error
+    global rag_chain, rag_error, quiz_llm, quiz_retriever
     try:
         index_name = os.getenv("PINECONE_INDEX_NAME")
         if not index_name:
@@ -86,6 +108,8 @@ def init_chain():
         # 4. Create chains
         question_answer_chain = create_stuff_documents_chain(llm, prompt)
         rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+        quiz_llm = llm
+        quiz_retriever = retriever
         rag_error = None
         print("RAG Chain initialized successfully!")
 
@@ -128,6 +152,43 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         print(f"Error during chat handling: {e}")
         return ChatResponse(reply="The assistant could not complete that request. Please try again shortly.")
+
+
+@app.post("/quiz", response_model=QuizResponse)
+async def quiz_endpoint(request: QuizRequest):
+    if quiz_llm is None or quiz_retriever is None:
+        raise HTTPException(status_code=503, detail="The quiz service is still initializing.")
+
+    question_count = max(3, min(request.question_count, 10))
+    try:
+        documents = quiz_retriever.invoke(
+            f"{request.subject} {request.topic} syllabus concepts definitions and examples"
+        )
+        context = "\n\n".join(document.page_content for document in documents)
+        quiz_prompt = f"""
+You are creating a syllabus-based multiple-choice quiz for a KTU B.Tech CSE student.
+Subject: {request.subject}
+Topic: {request.topic}
+Create exactly {question_count} questions using only the study context below.
+Each question must have exactly four options and one correct answer.
+The answer_index must be zero-based (0, 1, 2, or 3).
+Return ONLY valid JSON in this exact shape, with no markdown fences:
+{{"questions":[{{"question":"...","options":["...","...","...","..."],"answer_index":0,"explanation":"..."}}]}}
+
+Study context:
+{context}
+"""
+        result = quiz_llm.invoke(quiz_prompt)
+        raw_content = result.content if isinstance(result.content, str) else str(result.content)
+        raw_content = raw_content.strip().removeprefix("```json").removesuffix("```").strip()
+        payload = json.loads(raw_content)
+        questions = [QuizQuestion.model_validate(question) for question in payload["questions"]]
+        if len(questions) != question_count:
+            raise ValueError("The model returned an unexpected number of questions.")
+        return QuizResponse(subject=request.subject, topic=request.topic, questions=questions)
+    except Exception as error:
+        print(f"Error creating quiz: {error}")
+        raise HTTPException(status_code=502, detail="Could not create the quiz. Please try again.") from error
 
 
 @app.post("/admin/ingest")

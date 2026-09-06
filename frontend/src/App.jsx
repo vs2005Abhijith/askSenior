@@ -220,6 +220,167 @@ function AdminDashboard() {
   );
 }
 
+const quizTopics = {
+  TOC: ['Finite Automata', 'Regular Expressions', 'Context-Free Grammars'],
+  DBMS: ['Relational Model', 'SQL', 'Normalization'],
+  OS: ['Disk Scheduling'],
+  CN: ['Computer Networks Fundamentals', 'Data Link Layer', 'Network Layer'],
+};
+
+function QuizApp({ user }) {
+  const apiBaseUrl = import.meta.env.DEV
+    ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
+    : '/api';
+  const [subject, setSubject] = useState('TOC');
+  const [topic, setTopic] = useState(quizTopics.TOC[0]);
+  const [questionCount, setQuestionCount] = useState(5);
+  const [questions, setQuestions] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const currentQuestion = questions[currentIndex];
+  const hasStarted = questions.length > 0;
+
+  const handleSubjectChange = (event) => {
+    const nextSubject = event.target.value;
+    setSubject(nextSubject);
+    setTopic(quizTopics[nextSubject][0]);
+  };
+
+  const generateQuiz = async (event) => {
+    event.preventDefault();
+    setError('');
+    setIsLoading(true);
+    setQuestions([]);
+    setIsComplete(false);
+    try {
+      const response = await fetch(`${apiBaseUrl}/quiz`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, topic, question_count: questionCount }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.detail || 'Could not create the quiz.');
+      setQuestions(data.questions);
+      setCurrentIndex(0);
+      setSelectedOption(null);
+      setScore(0);
+    } catch (quizError) {
+      setError(quizError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const chooseOption = (optionIndex) => {
+    if (selectedOption !== null) return;
+    setSelectedOption(optionIndex);
+  };
+
+  const nextQuestion = () => {
+    const earned = selectedOption === currentQuestion.answer_index ? 1 : 0;
+    const nextScore = score + earned;
+    setScore(nextScore);
+    if (currentIndex === questions.length - 1) {
+      setIsComplete(true);
+      return;
+    }
+    setCurrentIndex((index) => index + 1);
+    setSelectedOption(null);
+  };
+
+  return (
+    <div className="quiz-shell">
+      <header className="quiz-header">
+        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to chat</button>
+        <div className="quiz-account">
+          {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+        </div>
+      </header>
+      <main className="quiz-card">
+        <div className="quiz-intro">
+          <p className="eyebrow">askSenior / practice room</p>
+          <h1>Test your knowledge</h1>
+          <p>Generate syllabus-based questions from the notes currently available to askSenior.</p>
+        </div>
+
+        {!hasStarted && (
+          <form className="quiz-setup" onSubmit={generateQuiz}>
+            <label>
+              Subject
+              <select value={subject} onChange={handleSubjectChange}>
+                {Object.keys(quizTopics).map((option) => <option key={option}>{option}</option>)}
+              </select>
+            </label>
+            <label>
+              Topic
+              <select value={topic} onChange={(event) => setTopic(event.target.value)}>
+                {quizTopics[subject].map((option) => <option key={option}>{option}</option>)}
+              </select>
+            </label>
+            <label>
+              Questions
+              <select value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}>
+                <option value="3">3 questions</option>
+                <option value="5">5 questions</option>
+                <option value="10">10 questions</option>
+              </select>
+            </label>
+            <button className="quiz-start-btn" type="submit" disabled={isLoading}>
+              {isLoading ? 'Creating quiz...' : 'Create quiz'}
+            </button>
+          </form>
+        )}
+
+        {error && <div className="admin-alert error">{error}</div>}
+
+        {hasStarted && !isComplete && currentQuestion && (
+          <section className="question-card">
+            <div className="question-meta">Question {currentIndex + 1} of {questions.length}</div>
+            <h2>{currentQuestion.question}</h2>
+            <div className="quiz-options">
+              {currentQuestion.options.map((option, optionIndex) => {
+                const isCorrect = optionIndex === currentQuestion.answer_index;
+                const isSelected = optionIndex === selectedOption;
+                const stateClass = selectedOption === null ? '' : isCorrect ? 'correct' : isSelected ? 'incorrect' : '';
+                return (
+                  <button className={`quiz-option ${stateClass}`} key={option} onClick={() => chooseOption(optionIndex)}>
+                    <span>{String.fromCharCode(65 + optionIndex)}</span>{option}
+                  </button>
+                );
+              })}
+            </div>
+            {selectedOption !== null && (
+              <div className="answer-explanation">
+                <strong>{selectedOption === currentQuestion.answer_index ? 'Correct!' : 'Not quite.'}</strong>
+                <p>{currentQuestion.explanation}</p>
+              </div>
+            )}
+            <button className="quiz-next-btn" onClick={nextQuestion} disabled={selectedOption === null}>
+              {currentIndex === questions.length - 1 ? 'See result' : 'Next question'}
+            </button>
+          </section>
+        )}
+
+        {isComplete && (
+          <section className="quiz-result">
+            <p className="eyebrow">Quiz complete</p>
+            <div className="score-number">{score}<span>/{questions.length}</span></div>
+            <h2>{score === questions.length ? 'Excellent work!' : 'Keep practicing!'}</h2>
+            <p>You answered {score} out of {questions.length} questions correctly.</p>
+            <button className="quiz-start-btn" onClick={() => { setQuestions([]); setIsComplete(false); }}>Try another quiz</button>
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
+
 function ChatApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
@@ -339,6 +500,7 @@ function ChatApp({ user }) {
         </div>
         <div className="account-area">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
       </div>
@@ -427,5 +589,5 @@ export default function App() {
 
   if (user === undefined) return null;
   if (!user) return <AuthScreen />;
-  return <ChatApp user={user} />;
+  return window.location.pathname === '/quiz' ? <QuizApp user={user} /> : <ChatApp user={user} />;
 }
