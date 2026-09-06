@@ -313,6 +313,18 @@
   margin-bottom: 18px;
 }
 
+.quiz-header .text-btn {
+  color: #ffffff;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.quiz-header .text-btn:hover {
+  color: #ffffff;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
 .quiz-account {
   display: flex;
   align-items: center;
