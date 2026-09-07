@@ -228,6 +228,20 @@ const quizTopics = {
 };
 
 function Dashboard({ user }) {
+  const dashboardPrompt = 'What would you like to do?';
+  const [typedPrompt, setTypedPrompt] = useState('');
+
+  useEffect(() => {
+    let characterIndex = 0;
+    const timer = window.setInterval(() => {
+      characterIndex += 1;
+      setTypedPrompt(dashboardPrompt.slice(0, characterIndex));
+      if (characterIndex === dashboardPrompt.length) window.clearInterval(timer);
+    }, 70);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <div className="dashboard-shell">
       <header className="dashboard-header">
@@ -239,7 +253,9 @@ function Dashboard({ user }) {
         </div>
       </header>
       <main className="dashboard-content">
-        <h1 className="dashboard-title">What would you like to do?</h1>
+        <h1 className="dashboard-title" aria-label={dashboardPrompt}>
+          {typedPrompt}<span className="typing-cursor" aria-hidden="true" />
+        </h1>
         <div className="dashboard-options">
           <button className="dashboard-option chat-option" onClick={() => { window.location.href = '/chat'; }}>
             <span className="option-number">01</span>

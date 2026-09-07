@@ -360,6 +360,20 @@
   to { background-position: -100% center; }
 }
 
+.typing-cursor {
+  display: inline-block;
+  width: 0.08em;
+  height: 0.85em;
+  margin-left: 0.12em;
+  vertical-align: -0.05em;
+  background: var(--accent-color);
+  animation: typing-cursor-blink 0.8s steps(1) infinite;
+}
+
+@keyframes typing-cursor-blink {
+  50% { opacity: 0; }
+}
+
 .dashboard-subtitle {
   color: var(--text-muted);
   font-size: 1.05rem;
