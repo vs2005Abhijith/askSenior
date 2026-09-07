@@ -229,18 +229,7 @@ const quizTopics = {
 
 function Dashboard({ user }) {
   const dashboardPrompt = 'What would you like to do?';
-  const [typedPrompt, setTypedPrompt] = useState('');
-
-  useEffect(() => {
-    let characterIndex = 0;
-    const timer = window.setInterval(() => {
-      characterIndex += 1;
-      setTypedPrompt(dashboardPrompt.slice(0, characterIndex));
-      if (characterIndex === dashboardPrompt.length) window.clearInterval(timer);
-    }, 70);
-
-    return () => window.clearInterval(timer);
-  }, []);
+  const promptWords = dashboardPrompt.split(' ');
 
   return (
     <div className="dashboard-shell">
@@ -254,7 +243,17 @@ function Dashboard({ user }) {
       </header>
       <main className="dashboard-content">
         <h1 className="dashboard-title" aria-label={dashboardPrompt}>
-          {typedPrompt}<span className="typing-cursor" aria-hidden="true" />
+          {promptWords.map((word, index) => (
+            <span
+              className="dashboard-title-word"
+              key={`${word}-${index}`}
+              style={{ '--word-index': index }}
+              aria-hidden="true"
+            >
+              {word}{index < promptWords.length - 1 ? ' ' : ''}
+            </span>
+          ))}
+          <span className="typing-cursor" aria-hidden="true" />
         </h1>
         <div className="dashboard-options">
           <button className="dashboard-option chat-option" onClick={() => { window.location.href = '/chat'; }}>
@@ -346,7 +345,7 @@ function QuizApp({ user }) {
   return (
     <div className="quiz-shell">
       <header className="quiz-header">
-        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to dashboard</button>
+        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to home</button>
         <div className="quiz-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
@@ -550,7 +549,7 @@ function ChatApp({ user }) {
         </div>
         <div className="account-area">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
-          <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Dashboard</button>
+          <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
           <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
