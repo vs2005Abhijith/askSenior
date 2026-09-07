@@ -239,9 +239,7 @@ function Dashboard({ user }) {
         </div>
       </header>
       <main className="dashboard-content">
-        <p className="eyebrow">askSenior / student dashboard</p>
         <h1 className="dashboard-title">What would you like to do?</h1>
-        <p className="dashboard-subtitle">Study with your syllabus notes or test what you already know.</p>
         <div className="dashboard-options">
           <button className="dashboard-option chat-option" onClick={() => { window.location.href = '/chat'; }}>
             <span className="option-number">01</span>
