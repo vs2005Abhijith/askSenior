@@ -27,6 +27,7 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
+  overflow-x: hidden;
   background-image:
     radial-gradient(circle at 12% 18%, rgba(102, 57, 156, 0.08), transparent 28%),
     radial-gradient(circle at 88% 76%, rgba(126, 126, 126, 0.08), transparent 26%);
