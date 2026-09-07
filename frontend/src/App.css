@@ -341,12 +341,23 @@
   font-size: clamp(2.4rem, 7vw, 5.8rem);
   letter-spacing: -0.07em;
   line-height: 0.98;
-  animation: dashboard-title-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  background: linear-gradient(100deg, #292331 0%, #66399c 46%, #292331 72%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: dashboard-title-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both,
+    dashboard-title-shimmer 3.2s 1.2s ease-in-out infinite;
 }
 
 @keyframes dashboard-title-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; letter-spacing: -0.02em; transform: translateY(24px); }
+  to { opacity: 1; letter-spacing: -0.07em; transform: translateY(0); }
+}
+
+@keyframes dashboard-title-shimmer {
+  from { background-position: 100% center; }
+  to { background-position: -100% center; }
 }
 
 .dashboard-subtitle {
