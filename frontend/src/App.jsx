@@ -227,6 +227,42 @@ const quizTopics = {
   CN: ['Computer Networks Fundamentals', 'Data Link Layer', 'Network Layer'],
 };
 
+function Dashboard({ user }) {
+  return (
+    <div className="dashboard-shell">
+      <header className="dashboard-header">
+        <img className="dashboard-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
+        <div className="dashboard-account">
+          {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <span>{user.displayName || 'Student'}</span>
+          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+        </div>
+      </header>
+      <main className="dashboard-content">
+        <p className="eyebrow">askSenior / student dashboard</p>
+        <h1>What would you like to do?</h1>
+        <p className="dashboard-subtitle">Study with your syllabus notes or test what you already know.</p>
+        <div className="dashboard-options">
+          <button className="dashboard-option chat-option" onClick={() => { window.location.href = '/chat'; }}>
+            <span className="option-number">01</span>
+            <span className="option-icon">&#8594;</span>
+            <strong>Ask askSenior</strong>
+            <span>Chat with your KTU syllabus assistant and get answers from the available notes.</span>
+            <small>Open chat</small>
+          </button>
+          <button className="dashboard-option quiz-option" onClick={() => { window.location.href = '/quiz'; }}>
+            <span className="option-number">02</span>
+            <span className="option-icon">?</span>
+            <strong>Take a quiz</strong>
+            <span>Choose a subject and topic, then test your understanding with generated questions.</span>
+            <small>Start practice</small>
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function QuizApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
@@ -296,7 +332,7 @@ function QuizApp({ user }) {
   return (
     <div className="quiz-shell">
       <header className="quiz-header">
-        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to chat</button>
+        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to dashboard</button>
         <div className="quiz-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
@@ -500,6 +536,7 @@ function ChatApp({ user }) {
         </div>
         <div className="account-area">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Dashboard</button>
           <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
@@ -589,5 +626,7 @@ export default function App() {
 
   if (user === undefined) return null;
   if (!user) return <AuthScreen />;
-  return window.location.pathname === '/quiz' ? <QuizApp user={user} /> : <ChatApp user={user} />;
+  if (window.location.pathname === '/quiz') return <QuizApp user={user} />;
+  if (window.location.pathname === '/chat') return <ChatApp user={user} />;
+  return <Dashboard user={user} />;
 }

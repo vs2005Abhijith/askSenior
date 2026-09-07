@@ -4,6 +4,8 @@
     { "source": "/admin", "destination": "/" },
     { "source": "/admin/", "destination": "/" },
     { "source": "/quiz", "destination": "/" },
-    { "source": "/quiz/", "destination": "/" }
+    { "source": "/quiz/", "destination": "/" },
+    { "source": "/chat", "destination": "/" },
+    { "source": "/chat/", "destination": "/" }
   ]
 }
