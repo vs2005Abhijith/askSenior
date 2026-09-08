@@ -255,6 +255,7 @@
   position: absolute;
   top: 18px;
   right: 24px;
+  z-index: 3;
 }
 
 .account-avatar {
@@ -292,6 +293,31 @@
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.account-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-nav-toggle {
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mobile-nav-toggle span {
+  display: block;
+  height: 2px;
+  margin: 4px 0;
+  background: var(--accent-color);
+  border-radius: 2px;
 }
 
 .dashboard-shell {
@@ -694,6 +720,34 @@
   .account-area {
     top: 14px;
     right: 14px;
+  }
+
+  .mobile-nav-toggle {
+    display: block;
+  }
+
+  .account-nav {
+    display: none;
+    position: absolute;
+    top: 46px;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 126px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(44, 29, 58, 0.14);
+  }
+
+  .account-nav.open {
+    display: flex;
+  }
+
+  .account-nav .quiz-link,
+  .account-nav .signout-btn {
+    width: 100%;
   }
 
   .signout-btn {

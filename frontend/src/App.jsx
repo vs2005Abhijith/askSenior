@@ -247,10 +247,13 @@ function Dashboard({ user }) {
             <span
               className="dashboard-title-word"
               key={`${word}-${index}`}
-              style={{ '--word-index': index }}
+              style={{
+                '--word-index': index,
+                marginRight: index < promptWords.length - 1 ? '0.28em' : undefined,
+              }}
               aria-hidden="true"
             >
-              {word}{index < promptWords.length - 1 ? ' ' : ''}
+              {word}
             </span>
           ))}
           <span className="typing-cursor" aria-hidden="true" />
@@ -444,6 +447,7 @@ function ChatApp({ user }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState('');
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const scrollRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -549,9 +553,22 @@ function ChatApp({ user }) {
         </div>
         <div className="account-area">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
-          <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
-          <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
-          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+          <button
+            className="mobile-nav-toggle"
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded={isNavOpen}
+            onClick={() => setIsNavOpen((open) => !open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Chat navigation">
+            <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
+            <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+          </nav>
         </div>
       </div>
 
