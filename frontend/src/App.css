@@ -330,13 +330,15 @@
 
 .progress-page {
   min-height: 100dvh;
+  width: 100%;
   padding: 24px;
   background: radial-gradient(circle at 12% 8%, rgba(102, 57, 156, 0.07), transparent 30%), #ffffff;
 }
 
 .progress-page-header,
 .progress-page-content {
-  width: min(100%, 1080px);
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
 }
 
@@ -392,6 +394,7 @@
 
 .progress-page-content > .progress-panel {
   margin-top: 0;
+  width: 100%;
 }
 
 .dashboard-header,
@@ -617,6 +620,61 @@
   height: 10px;
   margin-top: 9px;
   background: #eee9f3;
+}
+
+.monthly-progress {
+  margin-top: 28px;
+}
+
+.monthly-progress .learning-progress-label > span:last-child {
+  font-size: 0.72rem;
+}
+
+.monthly-bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(40px, 1fr));
+  align-items: end;
+  gap: clamp(10px, 2vw, 24px);
+  height: 170px;
+  margin-top: 14px;
+  padding: 16px 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.monthly-bar {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  height: 100%;
+  gap: 5px;
+}
+
+.monthly-bar-track {
+  display: flex;
+  align-items: flex-end;
+  width: min(34px, 75%);
+  height: 100%;
+  overflow: hidden;
+  background: #eee9f3;
+  border-radius: 8px 8px 3px 3px;
+}
+
+.monthly-bar-value {
+  width: 100%;
+  min-height: 0;
+  background: linear-gradient(180deg, var(--accent-color), var(--accent-hover));
+  border-radius: 8px 8px 3px 3px;
+  transition: height 0.35s ease;
+}
+
+.monthly-bar strong {
+  color: var(--accent-color);
+  font-size: 0.68rem;
+}
+
+.monthly-bar span {
+  color: var(--text-muted);
+  font-size: 0.7rem;
 }
 
 .score-list {
@@ -1523,6 +1581,11 @@
 
   .progress-stats span {
     font-size: 0.65rem;
+  }
+
+  .monthly-bars {
+    gap: 5px;
+    padding-inline: 4px;
   }
 
   .dashboard-option {

@@ -246,6 +246,24 @@ function ProgressPanel({ user }) {
     : 0;
   const bestScore = totalAttempts ? Math.max(...quizHistory.map((quiz) => quiz.percentage)) : 0;
   const recentQuizzes = quizHistory.slice(0, 5);
+  const monthlyProgress = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - (5 - index));
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    const monthQuizzes = quizHistory.filter((quiz) => {
+      const quizDate = new Date(quiz.completedAt);
+      return `${quizDate.getFullYear()}-${quizDate.getMonth()}` === monthKey;
+    });
+    const score = monthQuizzes.length
+      ? Math.round(monthQuizzes.reduce((total, quiz) => total + quiz.percentage, 0) / monthQuizzes.length)
+      : 0;
+    return {
+      label: date.toLocaleDateString('en-IN', { month: 'short' }),
+      score,
+      attempts: monthQuizzes.length,
+    };
+  });
 
   useEffect(() => {
     const refreshHistory = () => setQuizHistory(readQuizHistory(user.uid));
@@ -270,6 +288,20 @@ function ProgressPanel({ user }) {
       <div className="learning-progress">
         <div className="learning-progress-label"><span>Overall progress</span><strong>{averageScore}%</strong></div>
         <div className="progress-track"><div className="progress-value" style={{ width: `${averageScore}%` }} /></div>
+      </div>
+      <div className="monthly-progress">
+        <div className="learning-progress-label"><span>Monthly progress</span><span>Average score by month</span></div>
+        <div className="monthly-bars">
+          {monthlyProgress.map((month) => (
+            <div className="monthly-bar" key={month.label}>
+              <div className="monthly-bar-track" title={`${month.score}% average, ${month.attempts} ${month.attempts === 1 ? 'attempt' : 'attempts'}`}>
+                <div className="monthly-bar-value" style={{ height: `${month.score}%` }} />
+              </div>
+              <strong>{month.score}%</strong>
+              <span>{month.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
       {recentQuizzes.length > 0 ? (
         <div className="score-list">
