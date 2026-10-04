@@ -328,6 +328,39 @@
   background: radial-gradient(circle at 12% 8%, rgba(102, 57, 156, 0.06), transparent 30%), #ffffff;
 }
 
+.progress-page {
+  min-height: 100dvh;
+  padding: 24px;
+  background: radial-gradient(circle at 12% 8%, rgba(102, 57, 156, 0.07), transparent 30%), #ffffff;
+}
+
+.progress-page-header,
+.progress-page-content {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+}
+
+.progress-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.progress-page-content {
+  padding-top: clamp(48px, 10vh, 110px);
+}
+
+.progress-page-content > .text-btn {
+  margin-bottom: 16px;
+  color: var(--accent-color);
+  border-color: var(--border-color);
+}
+
+.progress-page-content > .progress-panel {
+  margin-top: 0;
+}
+
 .dashboard-header,
 .dashboard-content {
   width: min(100%, 1080px);
@@ -1386,6 +1419,23 @@
 
   .dashboard-shell {
     padding: 0;
+  }
+
+  .progress-page {
+    padding: 0;
+  }
+
+  .progress-page-header {
+    align-items: flex-start;
+    padding: 14px 16px 0;
+  }
+
+  .progress-page-content {
+    padding: 36px 16px 34px;
+  }
+
+  .progress-page-content > .text-btn {
+    margin-bottom: 12px;
   }
 
   .dashboard-header {

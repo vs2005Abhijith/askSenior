@@ -238,9 +238,7 @@ const readQuizHistory = (userId) => {
   }
 };
 
-function Dashboard({ user }) {
-  const dashboardPrompt = 'What would you like to do?';
-  const promptWords = dashboardPrompt.split(' ');
+function ProgressPanel({ user }) {
   const [quizHistory, setQuizHistory] = useState(() => readQuizHistory(user.uid));
   const totalAttempts = quizHistory.length;
   const averageScore = totalAttempts
@@ -256,12 +254,52 @@ function Dashboard({ user }) {
   }, [user.uid]);
 
   return (
+    <section className="progress-panel" aria-labelledby="progress-title">
+      <div className="progress-panel-heading">
+        <div>
+          <p className="eyebrow">Your learning space</p>
+          <h2 id="progress-title">Test progress</h2>
+        </div>
+        <span className="progress-summary">{totalAttempts} {totalAttempts === 1 ? 'test' : 'tests'} completed</span>
+      </div>
+      <div className="progress-stats">
+        <div><strong>{averageScore}%</strong><span>Average score</span></div>
+        <div><strong>{bestScore}%</strong><span>Best score</span></div>
+        <div><strong>{totalAttempts}</strong><span>Total attempts</span></div>
+      </div>
+      <div className="learning-progress">
+        <div className="learning-progress-label"><span>Overall progress</span><strong>{averageScore}%</strong></div>
+        <div className="progress-track"><div className="progress-value" style={{ width: `${averageScore}%` }} /></div>
+      </div>
+      {recentQuizzes.length > 0 ? (
+        <div className="score-list">
+          <h3>Recent test scores</h3>
+          {recentQuizzes.map((quiz) => (
+            <div className="score-row" key={quiz.id}>
+              <div><strong>{quiz.subject}</strong><span>{quiz.topic}</span></div>
+              <div className="score-result"><strong>{quiz.score}/{quiz.total}</strong><span>{quiz.percentage}%</span></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
+      )}
+    </section>
+  );
+}
+
+function Dashboard({ user }) {
+  const dashboardPrompt = 'What would you like to do?';
+  const promptWords = dashboardPrompt.split(' ');
+
+  return (
     <div className="dashboard-shell">
       <header className="dashboard-header">
         <img className="dashboard-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
         <div className="dashboard-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <span>{user.displayName || 'Student'}</span>
+          <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
       </header>
@@ -298,37 +336,27 @@ function Dashboard({ user }) {
             <small>Start practice</small>
           </button>
         </div>
-        <section className="progress-panel" aria-labelledby="progress-title">
-          <div className="progress-panel-heading">
-            <div>
-              <p className="eyebrow">Your learning space</p>
-              <h2 id="progress-title">Test progress</h2>
-            </div>
-            <span className="progress-summary">{totalAttempts} {totalAttempts === 1 ? 'test' : 'tests'} completed</span>
-          </div>
-          <div className="progress-stats">
-            <div><strong>{averageScore}%</strong><span>Average score</span></div>
-            <div><strong>{bestScore}%</strong><span>Best score</span></div>
-            <div><strong>{totalAttempts}</strong><span>Total attempts</span></div>
-          </div>
-          <div className="learning-progress">
-            <div className="learning-progress-label"><span>Overall progress</span><strong>{averageScore}%</strong></div>
-            <div className="progress-track"><div className="progress-value" style={{ width: `${averageScore}%` }} /></div>
-          </div>
-          {recentQuizzes.length > 0 ? (
-            <div className="score-list">
-              <h3>Recent test scores</h3>
-              {recentQuizzes.map((quiz) => (
-                <div className="score-row" key={quiz.id}>
-                  <div><strong>{quiz.subject}</strong><span>{quiz.topic}</span></div>
-                  <div className="score-result"><strong>{quiz.score}/{quiz.total}</strong><span>{quiz.percentage}%</span></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
-          )}
-        </section>
+      </main>
+    </div>
+  );
+}
+
+function ProgressDashboard({ user }) {
+  return (
+    <div className="progress-page">
+      <header className="progress-page-header">
+        <img className="dashboard-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
+        <div className="dashboard-account">
+          {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
+          <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
+          <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
+          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+        </div>
+      </header>
+      <main className="progress-page-content">
+        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to home</button>
+        <ProgressPanel user={user} />
       </main>
     </div>
   );
@@ -643,6 +671,7 @@ function ChatApp({ user }) {
           <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Chat navigation">
             <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
             <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
             <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
           </nav>
         </div>
@@ -732,6 +761,7 @@ export default function App() {
 
   if (user === undefined) return null;
   if (!user) return <AuthScreen />;
+  if (window.location.pathname === '/dashboard') return <ProgressDashboard user={user} />;
   if (window.location.pathname === '/quiz') return <QuizApp user={user} />;
   if (window.location.pathname === '/chat') return <ChatApp user={user} />;
   return <Dashboard user={user} />;
