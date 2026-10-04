@@ -227,9 +227,33 @@ const quizTopics = {
   CN: ['Computer Networks Fundamentals', 'Data Link Layer', 'Network Layer'],
 };
 
+const quizHistoryKey = (userId) => `askSeniorQuizHistory:${userId}`;
+
+const readQuizHistory = (userId) => {
+  try {
+    const history = JSON.parse(localStorage.getItem(quizHistoryKey(userId)) || '[]');
+    return Array.isArray(history) ? history : [];
+  } catch {
+    return [];
+  }
+};
+
 function Dashboard({ user }) {
   const dashboardPrompt = 'What would you like to do?';
   const promptWords = dashboardPrompt.split(' ');
+  const [quizHistory, setQuizHistory] = useState(() => readQuizHistory(user.uid));
+  const totalAttempts = quizHistory.length;
+  const averageScore = totalAttempts
+    ? Math.round(quizHistory.reduce((total, quiz) => total + quiz.percentage, 0) / totalAttempts)
+    : 0;
+  const bestScore = totalAttempts ? Math.max(...quizHistory.map((quiz) => quiz.percentage)) : 0;
+  const recentQuizzes = quizHistory.slice(0, 5);
+
+  useEffect(() => {
+    const refreshHistory = () => setQuizHistory(readQuizHistory(user.uid));
+    window.addEventListener('storage', refreshHistory);
+    return () => window.removeEventListener('storage', refreshHistory);
+  }, [user.uid]);
 
   return (
     <div className="dashboard-shell">
@@ -274,6 +298,37 @@ function Dashboard({ user }) {
             <small>Start practice</small>
           </button>
         </div>
+        <section className="progress-panel" aria-labelledby="progress-title">
+          <div className="progress-panel-heading">
+            <div>
+              <p className="eyebrow">Your learning space</p>
+              <h2 id="progress-title">Test progress</h2>
+            </div>
+            <span className="progress-summary">{totalAttempts} {totalAttempts === 1 ? 'test' : 'tests'} completed</span>
+          </div>
+          <div className="progress-stats">
+            <div><strong>{averageScore}%</strong><span>Average score</span></div>
+            <div><strong>{bestScore}%</strong><span>Best score</span></div>
+            <div><strong>{totalAttempts}</strong><span>Total attempts</span></div>
+          </div>
+          <div className="learning-progress">
+            <div className="learning-progress-label"><span>Overall progress</span><strong>{averageScore}%</strong></div>
+            <div className="progress-track"><div className="progress-value" style={{ width: `${averageScore}%` }} /></div>
+          </div>
+          {recentQuizzes.length > 0 ? (
+            <div className="score-list">
+              <h3>Recent test scores</h3>
+              {recentQuizzes.map((quiz) => (
+                <div className="score-row" key={quiz.id}>
+                  <div><strong>{quiz.subject}</strong><span>{quiz.topic}</span></div>
+                  <div className="score-result"><strong>{quiz.score}/{quiz.total}</strong><span>{quiz.percentage}%</span></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
+          )}
+        </section>
       </main>
     </div>
   );
@@ -284,7 +339,7 @@ function QuizApp({ user }) {
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
     : '/api';
   const [subject, setSubject] = useState('TOC');
-  const [topic, setTopic] = useState(quizTopics.TOC[0]);
+  const [topic, setTopic] = useState('');
   const [questionCount, setQuestionCount] = useState(5);
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -300,7 +355,7 @@ function QuizApp({ user }) {
   const handleSubjectChange = (event) => {
     const nextSubject = event.target.value;
     setSubject(nextSubject);
-    setTopic(quizTopics[nextSubject][0]);
+    setTopic('');
   };
 
   const generateQuiz = async (event) => {
@@ -310,10 +365,16 @@ function QuizApp({ user }) {
     setQuestions([]);
     setIsComplete(false);
     try {
+      const typedTopic = topic.trim();
+      if (!typedTopic) {
+        setError('Enter a topic before creating the quiz.');
+        setIsLoading(false);
+        return;
+      }
       const response = await fetch(`${apiBaseUrl}/quiz`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, topic, question_count: questionCount }),
+        body: JSON.stringify({ subject, topic: typedTopic, question_count: questionCount }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.detail || 'Could not create the quiz.');
@@ -338,6 +399,17 @@ function QuizApp({ user }) {
     const nextScore = score + earned;
     setScore(nextScore);
     if (currentIndex === questions.length - 1) {
+      const completedQuiz = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        subject,
+        topic: topic.trim(),
+        score: nextScore,
+        total: questions.length,
+        percentage: Math.round((nextScore / questions.length) * 100),
+        completedAt: new Date().toISOString(),
+      };
+      const history = readQuizHistory(user.uid);
+      localStorage.setItem(quizHistoryKey(user.uid), JSON.stringify([completedQuiz, ...history].slice(0, 20)));
       setIsComplete(true);
       return;
     }
@@ -371,9 +443,13 @@ function QuizApp({ user }) {
             </label>
             <label>
               Topic
-              <select value={topic} onChange={(event) => setTopic(event.target.value)}>
-                {quizTopics[subject].map((option) => <option key={option}>{option}</option>)}
-              </select>
+              <input
+                type="text"
+                value={topic}
+                onChange={(event) => setTopic(event.target.value)}
+                placeholder="Type a topic, e.g. normalization"
+                required
+              />
             </label>
             <label>
               Questions
