@@ -365,8 +365,8 @@
   z-index: 5;
   flex-direction: column;
   align-items: stretch;
-  min-width: 138px;
-  padding: 8px;
+  min-width: 180px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -380,6 +380,9 @@
 .progress-page-header .account-nav .quiz-link,
 .progress-page-header .account-nav .signout-btn {
   width: 100%;
+  min-height: 42px;
+  padding: 10px 14px;
+  font-size: 0.86rem;
 }
 
 .progress-page-content {
