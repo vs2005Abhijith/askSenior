@@ -342,16 +342,31 @@ function Dashboard({ user }) {
 }
 
 function ProgressDashboard({ user }) {
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
   return (
     <div className="progress-page">
       <header className="progress-page-header">
         <img className="dashboard-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
         <div className="dashboard-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
-          <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
-          <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
-          <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
-          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+          <button
+            className="mobile-nav-toggle"
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded={isNavOpen}
+            onClick={() => setIsNavOpen((open) => !open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Progress navigation">
+            <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
+            <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+          </nav>
         </div>
       </header>
       <main className="progress-page-content">

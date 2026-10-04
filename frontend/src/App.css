@@ -347,6 +347,39 @@
   gap: 20px;
 }
 
+.progress-page-header .dashboard-account {
+  position: relative;
+}
+
+.progress-page-header .mobile-nav-toggle {
+  display: block;
+}
+
+.progress-page-header .account-nav {
+  display: none;
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 5;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 138px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(44, 29, 58, 0.14);
+}
+
+.progress-page-header .account-nav.open {
+  display: flex;
+}
+
+.progress-page-header .account-nav .quiz-link,
+.progress-page-header .account-nav .signout-btn {
+  width: 100%;
+}
+
 .progress-page-content {
   padding-top: clamp(48px, 10vh, 110px);
 }
