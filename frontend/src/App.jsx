@@ -491,13 +491,13 @@ function QuizApp({ user }) {
         percentage: Math.round((nextScore / questions.length) * 100),
         completedAt: new Date().toISOString(),
       };
+      setIsComplete(true);
       try {
         if (!db) throw new Error('Firestore is not configured.');
         await addDoc(quizHistoryCollection(user.uid), completedQuiz);
       } catch (historyError) {
         setError(`Quiz completed, but the score could not be saved: ${historyError.message}`);
       }
-      setIsComplete(true);
       return;
     }
     setCurrentIndex((index) => index + 1);
