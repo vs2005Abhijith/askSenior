@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { collection, addDoc, onSnapshot, orderBy, query, limit } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, firebaseConfigured, googleProvider } from './firebase';
 import './App.css';
 
@@ -261,21 +261,20 @@ function ProgressPanel({ user }) {
   useEffect(() => {
     if (!db) return undefined;
 
-    const historyQuery = query(
-      quizHistoryCollection(user.uid),
-      orderBy('completedAt', 'desc'),
-      limit(20),
-    );
-    return onSnapshot(historyQuery, (snapshot) => {
-      setQuizHistory(snapshot.docs.map((document) => {
+    return onSnapshot(quizHistoryCollection(user.uid), (snapshot) => {
+      const history = snapshot.docs.map((document) => {
         const quiz = document.data();
         return {
           id: document.id,
           ...quiz,
           completedAt: quiz.completedAt?.toDate?.().toISOString() || quiz.completedAt,
         };
-      }));
-    }, () => setHistoryError('Progress could not be loaded right now.'));
+      }).sort((first, second) => new Date(second.completedAt) - new Date(first.completedAt));
+      setQuizHistory(history.slice(0, 20));
+      setHistoryError('');
+    }, (firestoreError) => {
+      setHistoryError(`Progress could not be loaded: ${firestoreError.message}`);
+    });
   }, [user.uid]);
 
   return (
