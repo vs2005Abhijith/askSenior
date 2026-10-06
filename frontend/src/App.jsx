@@ -286,6 +286,7 @@ function ProgressPanel({ user }) {
         </div>
         <span className="progress-summary">{totalAttempts} {totalAttempts === 1 ? 'test' : 'tests'} completed</span>
       </div>
+      {historyError && <p className="progress-error">{historyError}</p>}
       <div className="progress-stats">
         <div><strong>{averageScore}%</strong><span>Average score</span></div>
         <div><strong>{bestScore}%</strong><span>Best score</span></div>
@@ -322,7 +323,6 @@ function ProgressPanel({ user }) {
           ) : (
             <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
           )}
-          {historyError && <p className="empty-progress">{historyError}</p>}
         </section>
   );
 }
