@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { auth, firebaseConfigured, googleProvider } from './firebase';
+import { collection, addDoc, onSnapshot, orderBy, query, limit } from 'firebase/firestore';
+import { auth, db, firebaseConfigured, googleProvider } from './firebase';
 import './App.css';
 
 function AuthScreen() {
@@ -227,19 +228,11 @@ const quizTopics = {
   CN: ['Computer Networks Fundamentals', 'Data Link Layer', 'Network Layer'],
 };
 
-const quizHistoryKey = (userId) => `askSeniorQuizHistory:${userId}`;
-
-const readQuizHistory = (userId) => {
-  try {
-    const history = JSON.parse(localStorage.getItem(quizHistoryKey(userId)) || '[]');
-    return Array.isArray(history) ? history : [];
-  } catch {
-    return [];
-  }
-};
+const quizHistoryCollection = (userId) => collection(db, 'users', userId, 'quizHistory');
 
 function ProgressPanel({ user }) {
-  const [quizHistory, setQuizHistory] = useState(() => readQuizHistory(user.uid));
+  const [quizHistory, setQuizHistory] = useState([]);
+  const [historyError, setHistoryError] = useState('');
   const totalAttempts = quizHistory.length;
   const averageScore = totalAttempts
     ? Math.round(quizHistory.reduce((total, quiz) => total + quiz.percentage, 0) / totalAttempts)
@@ -266,9 +259,23 @@ function ProgressPanel({ user }) {
   });
 
   useEffect(() => {
-    const refreshHistory = () => setQuizHistory(readQuizHistory(user.uid));
-    window.addEventListener('storage', refreshHistory);
-    return () => window.removeEventListener('storage', refreshHistory);
+    if (!db) return undefined;
+
+    const historyQuery = query(
+      quizHistoryCollection(user.uid),
+      orderBy('completedAt', 'desc'),
+      limit(20),
+    );
+    return onSnapshot(historyQuery, (snapshot) => {
+      setQuizHistory(snapshot.docs.map((document) => {
+        const quiz = document.data();
+        return {
+          id: document.id,
+          ...quiz,
+          completedAt: quiz.completedAt?.toDate?.().toISOString() || quiz.completedAt,
+        };
+      }));
+    }, () => setHistoryError('Progress could not be loaded right now.'));
   }, [user.uid]);
 
   return (
@@ -313,10 +320,11 @@ function ProgressPanel({ user }) {
             </div>
           ))}
         </div>
-      ) : (
-        <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
-      )}
-    </section>
+          ) : (
+            <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
+          )}
+          {historyError && <p className="empty-progress">{historyError}</p>}
+        </section>
   );
 }
 
@@ -469,7 +477,7 @@ function QuizApp({ user }) {
     setSelectedOption(optionIndex);
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     const earned = selectedOption === currentQuestion.answer_index ? 1 : 0;
     const nextScore = score + earned;
     setScore(nextScore);
@@ -483,8 +491,12 @@ function QuizApp({ user }) {
         percentage: Math.round((nextScore / questions.length) * 100),
         completedAt: new Date().toISOString(),
       };
-      const history = readQuizHistory(user.uid);
-      localStorage.setItem(quizHistoryKey(user.uid), JSON.stringify([completedQuiz, ...history].slice(0, 20)));
+      try {
+        if (!db) throw new Error('Firestore is not configured.');
+        await addDoc(quizHistoryCollection(user.uid), completedQuiz);
+      } catch (historyError) {
+        setError(`Quiz completed, but the score could not be saved: ${historyError.message}`);
+      }
       setIsComplete(true);
       return;
     }
