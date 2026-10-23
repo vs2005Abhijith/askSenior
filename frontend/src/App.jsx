@@ -433,9 +433,13 @@ const base64UrlToBytes = (value) => {
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 };
 
-const getSharedChatToken = () => window.location.hash.startsWith('#shared=')
-  ? decodeURIComponent(window.location.hash.slice(8))
-  : null;
+const getSharedChatToken = () => {
+  const queryToken = new URLSearchParams(window.location.search).get('shared');
+  if (queryToken) return queryToken;
+  return window.location.hash.startsWith('#shared=')
+    ? decodeURIComponent(window.location.hash.slice(8))
+    : null;
+};
 
 const encodeSharedChat = async (messages) => {
   const bytes = new TextEncoder().encode(JSON.stringify(messages));
@@ -760,12 +764,11 @@ function ChatApp({ user }) {
     setShareMessage('');
     try {
       const encodedChat = await encodeSharedChat(messages);
-      const shareUrl = `${window.location.origin}${window.location.pathname}#shared=${encodedChat}`;
+      const shareUrl = `${window.location.origin}${window.location.pathname}?shared=${encodedChat}`;
       if (navigator.share) {
         await navigator.share({
           title: 'askSenior chat',
-          text: 'View this askSenior chat',
-          url: shareUrl,
+          text: `View this askSenior chat:\n${shareUrl}`,
         });
         setShareMessage('Chat ready to share');
       } else {
