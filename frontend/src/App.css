@@ -267,7 +267,11 @@
 }
 
 .share-chat-btn {
-  padding: 8px 12px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 8px;
   color: var(--accent-color);
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid var(--border-color);
@@ -276,6 +280,16 @@
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.share-chat-btn svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .share-chat-btn:hover:not(:disabled) {
@@ -1012,8 +1026,9 @@
   }
 
   .share-chat-btn {
-    padding: 7px 9px;
-    font-size: 0.72rem;
+    width: 36px;
+    height: 36px;
+    padding: 7px;
   }
 
   .share-status {

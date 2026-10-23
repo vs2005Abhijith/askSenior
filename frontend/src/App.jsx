@@ -421,25 +421,49 @@ const defaultChatMessages = [{
   text: "Hello! I'm askSenior. I can answer questions based on your KTU B.Tech CSE syllabus notes. What do you want to learn today?",
 }];
 
-const encodeSharedChat = (messages) => {
-  const bytes = new TextEncoder().encode(JSON.stringify(messages));
+const bytesToBase64Url = (bytes) => {
   let binary = '';
   bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
-  return encodeURIComponent(btoa(binary));
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
 
-const readSharedChat = () => {
-  try {
-    if (!window.location.hash.startsWith('#shared=')) return null;
-    const binary = atob(decodeURIComponent(window.location.hash.slice(8)));
-    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-    const messages = JSON.parse(new TextDecoder().decode(bytes));
-    return Array.isArray(messages) && messages.every((message) => message.role && typeof message.text === 'string')
-      ? messages
-      : null;
-  } catch {
-    return null;
+const base64UrlToBytes = (value) => {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+  const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='));
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+};
+
+const getSharedChatToken = () => window.location.hash.startsWith('#shared=')
+  ? decodeURIComponent(window.location.hash.slice(8))
+  : null;
+
+const encodeSharedChat = async (messages) => {
+  const bytes = new TextEncoder().encode(JSON.stringify(messages));
+  if (typeof CompressionStream === 'undefined') return `r.${bytesToBase64Url(bytes)}`;
+
+  const compressionStream = new CompressionStream('gzip');
+  const writer = compressionStream.writable.getWriter();
+  await writer.write(bytes);
+  await writer.close();
+  const compressed = new Uint8Array(await new Response(compressionStream.readable).arrayBuffer());
+  return `g.${bytesToBase64Url(compressed)}`;
+};
+
+const decodeSharedChat = async (token) => {
+  if (!token) return null;
+  const [format, encoded] = token.split('.', 2);
+  let bytes = base64UrlToBytes(encoded || format);
+  if (format === 'g' && typeof DecompressionStream !== 'undefined') {
+    const decompressionStream = new DecompressionStream('gzip');
+    const writer = decompressionStream.writable.getWriter();
+    await writer.write(bytes);
+    await writer.close();
+    bytes = new Uint8Array(await new Response(decompressionStream.readable).arrayBuffer());
   }
+  const messages = JSON.parse(new TextDecoder().decode(bytes));
+  return Array.isArray(messages) && messages.every((message) => message.role && typeof message.text === 'string')
+    ? messages
+    : null;
 };
 
 function QuizApp({ user }) {
@@ -625,7 +649,7 @@ function ChatApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
     : '/api';
-  const [messages, setMessages] = useState(() => readSharedChat() || defaultChatMessages);
+  const [messages, setMessages] = useState(defaultChatMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -641,6 +665,15 @@ function ChatApp({ user }) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    const sharedToken = getSharedChatToken();
+    if (!sharedToken) return undefined;
+    decodeSharedChat(sharedToken).then((sharedMessages) => {
+      if (sharedMessages) setMessages(sharedMessages);
+    }).catch(() => setShareMessage('This shared chat link is invalid or expired.'));
+    return undefined;
+  }, []);
 
   useEffect(() => () => recognitionRef.current?.stop(), []);
 
@@ -724,9 +757,10 @@ function ChatApp({ user }) {
   };
 
   const handleShareChat = async () => {
-    const shareUrl = `${window.location.origin}${window.location.pathname}#shared=${encodeSharedChat(messages)}`;
     setShareMessage('');
     try {
+      const encodedChat = await encodeSharedChat(messages);
+      const shareUrl = `${window.location.origin}${window.location.pathname}#shared=${encodedChat}`;
       if (navigator.share) {
         await navigator.share({
           title: 'askSenior chat',
@@ -762,8 +796,14 @@ function ChatApp({ user }) {
             onClick={handleShareChat}
             disabled={isLoading}
             title="Share this chat"
+            aria-label="Share this chat"
           >
-            Share
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="18" cy="5" r="2.5" />
+              <circle cx="6" cy="12" r="2.5" />
+              <circle cx="18" cy="19" r="2.5" />
+              <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5" />
+            </svg>
           </button>
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <button
