@@ -445,12 +445,18 @@ const encodeSharedChat = async (messages) => {
   const bytes = new TextEncoder().encode(JSON.stringify(messages));
   if (typeof CompressionStream === 'undefined') return `r.${bytesToBase64Url(bytes)}`;
 
-  const compressionStream = new CompressionStream('gzip');
-  const writer = compressionStream.writable.getWriter();
-  await writer.write(bytes);
-  await writer.close();
-  const compressed = new Uint8Array(await new Response(compressionStream.readable).arrayBuffer());
-  return `g.${bytesToBase64Url(compressed)}`;
+  try {
+    const compressedPromise = new Response(
+      new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip')),
+    ).arrayBuffer();
+    const timeoutPromise = new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error('Compression timed out')), 2500);
+    });
+    const compressed = new Uint8Array(await Promise.race([compressedPromise, timeoutPromise]));
+    return `g.${bytesToBase64Url(compressed)}`;
+  } catch {
+    return `r.${bytesToBase64Url(bytes)}`;
+  }
 };
 
 const decodeSharedChat = async (token) => {
