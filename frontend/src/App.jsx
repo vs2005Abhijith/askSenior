@@ -416,6 +416,32 @@ function ProgressDashboard({ user }) {
   );
 }
 
+const defaultChatMessages = [{
+  role: 'bot',
+  text: "Hello! I'm askSenior. I can answer questions based on your KTU B.Tech CSE syllabus notes. What do you want to learn today?",
+}];
+
+const encodeSharedChat = (messages) => {
+  const bytes = new TextEncoder().encode(JSON.stringify(messages));
+  let binary = '';
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return encodeURIComponent(btoa(binary));
+};
+
+const readSharedChat = () => {
+  try {
+    if (!window.location.hash.startsWith('#shared=')) return null;
+    const binary = atob(decodeURIComponent(window.location.hash.slice(8)));
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const messages = JSON.parse(new TextDecoder().decode(bytes));
+    return Array.isArray(messages) && messages.every((message) => message.role && typeof message.text === 'string')
+      ? messages
+      : null;
+  } catch {
+    return null;
+  }
+};
+
 function QuizApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
@@ -599,16 +625,12 @@ function ChatApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
     : '/api';
-  const [messages, setMessages] = useState([
-    {
-      role: 'bot',
-      text: "Hello! I'm askSenior. I can answer questions based on your KTU B.Tech CSE syllabus notes. What do you want to learn today?"
-    }
-  ]);
+  const [messages, setMessages] = useState(() => readSharedChat() || defaultChatMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState('');
+  const [shareMessage, setShareMessage] = useState('');
   const [isNavOpen, setIsNavOpen] = useState(false);
   const scrollRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -701,6 +723,26 @@ function ChatApp({ user }) {
     }
   };
 
+  const handleShareChat = async () => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}#shared=${encodeSharedChat(messages)}`;
+    setShareMessage('');
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'askSenior chat',
+          text: 'View this askSenior chat',
+          url: shareUrl,
+        });
+        setShareMessage('Chat ready to share');
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareMessage('Share link copied');
+      }
+    } catch (shareError) {
+      if (shareError.name !== 'AbortError') setShareMessage('Could not create a share link');
+    }
+  };
+
 
 
   return (
@@ -714,6 +756,15 @@ function ChatApp({ user }) {
           </p>
         </div>
         <div className="account-area">
+          <button
+            className="share-chat-btn"
+            type="button"
+            onClick={handleShareChat}
+            disabled={isLoading}
+            title="Share this chat"
+          >
+            Share
+          </button>
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <button
             className="mobile-nav-toggle"
@@ -734,6 +785,7 @@ function ChatApp({ user }) {
           </nav>
         </div>
       </div>
+      {shareMessage && <div className="share-status" role="status">{shareMessage}</div>}
 
       <div className="chat-container" ref={scrollRef}>
         {messages.map((msg, index) => (

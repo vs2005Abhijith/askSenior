@@ -266,6 +266,42 @@
   object-fit: cover;
 }
 
+.share-chat-btn {
+  padding: 8px 12px;
+  color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.share-chat-btn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  background: #ffffff;
+}
+
+.share-chat-btn:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.share-status {
+  position: absolute;
+  top: 74px;
+  right: 24px;
+  z-index: 4;
+  padding: 8px 12px;
+  color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  box-shadow: 0 8px 20px rgba(44, 29, 58, 0.1);
+  font-size: 0.74rem;
+}
+
 .signout-btn {
   padding: 8px 12px;
   color: var(--text-muted);
@@ -972,6 +1008,16 @@
 
   .account-area {
     top: 14px;
+    right: 14px;
+  }
+
+  .share-chat-btn {
+    padding: 7px 9px;
+    font-size: 0.72rem;
+  }
+
+  .share-status {
+    top: 66px;
     right: 14px;
   }
 
