@@ -470,6 +470,27 @@ const decodeSharedChat = async (token) => {
     : null;
 };
 
+const copyTextToClipboard = async (text) => {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the legacy clipboard API.
+    }
+  }
+
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.select();
+  const copied = document.execCommand('copy');
+  textArea.remove();
+  return copied;
+};
+
 function QuizApp({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
@@ -761,7 +782,7 @@ function ChatApp({ user }) {
   };
 
   const handleShareChat = async () => {
-    setShareMessage('');
+    setShareMessage('Preparing share link...');
     try {
       const encodedChat = await encodeSharedChat(messages);
       const shareUrl = `${window.location.origin}${window.location.pathname}?shared=${encodedChat}`;
@@ -772,8 +793,13 @@ function ChatApp({ user }) {
         });
         setShareMessage('Chat ready to share');
       } else {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareMessage('Share link copied');
+        const copied = await copyTextToClipboard(shareUrl);
+        if (copied) {
+          setShareMessage('Share link copied. Paste it in WhatsApp.');
+        } else {
+          window.open(`https://wa.me/?text=${encodeURIComponent(`View this askSenior chat: ${shareUrl}`)}`, '_blank', 'noopener,noreferrer');
+          setShareMessage('Opening WhatsApp...');
+        }
       }
     } catch (shareError) {
       if (shareError.name !== 'AbortError') setShareMessage('Could not create a share link');
