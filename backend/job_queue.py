@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from sqlalchemy import DateTime, Integer, LargeBinary, String, Text, create_engine
+from sqlalchemy import DateTime, Integer, JSON, LargeBinary, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 load_dotenv()
@@ -42,6 +42,16 @@ class IngestionJob(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
+class SharedChat(Base):
+    __tablename__ = "shared_chats"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    messages: Mapped[list] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
 

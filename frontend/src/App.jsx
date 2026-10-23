@@ -421,12 +421,6 @@ const defaultChatMessages = [{
   text: "Hello! I'm askSenior. I can answer questions based on your KTU B.Tech CSE syllabus notes. What do you want to learn today?",
 }];
 
-const bytesToBase64Url = (bytes) => {
-  let binary = '';
-  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-};
-
 const base64UrlToBytes = (value) => {
   const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
   const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='));
@@ -441,23 +435,7 @@ const getSharedChatToken = () => {
     : null;
 };
 
-const encodeSharedChat = async (messages) => {
-  const bytes = new TextEncoder().encode(JSON.stringify(messages));
-  if (typeof CompressionStream === 'undefined') return `r.${bytesToBase64Url(bytes)}`;
-
-  try {
-    const compressedPromise = new Response(
-      new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip')),
-    ).arrayBuffer();
-    const timeoutPromise = new Promise((_, reject) => {
-      window.setTimeout(() => reject(new Error('Compression timed out')), 2500);
-    });
-    const compressed = new Uint8Array(await Promise.race([compressedPromise, timeoutPromise]));
-    return `g.${bytesToBase64Url(compressed)}`;
-  } catch {
-    return `r.${bytesToBase64Url(bytes)}`;
-  }
-};
+const getSharedChatId = () => new URLSearchParams(window.location.search).get('share');
 
 const decodeSharedChat = async (token) => {
   if (!token) return null;
@@ -698,13 +676,26 @@ function ChatApp({ user }) {
   }, [messages, isLoading]);
 
   useEffect(() => {
+    const sharedId = getSharedChatId();
+    if (sharedId) {
+      fetch(`${apiBaseUrl}/share/${encodeURIComponent(sharedId)}`)
+        .then(async (response) => {
+          const data = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(data?.detail || 'Shared chat could not be loaded.');
+          return data;
+        })
+        .then((data) => setMessages(data.messages))
+        .catch((error) => setShareMessage(error.message));
+      return undefined;
+    }
+
     const sharedToken = getSharedChatToken();
     if (!sharedToken) return undefined;
     decodeSharedChat(sharedToken).then((sharedMessages) => {
       if (sharedMessages) setMessages(sharedMessages);
     }).catch(() => setShareMessage('This shared chat link is invalid or expired.'));
     return undefined;
-  }, []);
+  }, [apiBaseUrl]);
 
   useEffect(() => () => recognitionRef.current?.stop(), []);
 
@@ -790,8 +781,14 @@ function ChatApp({ user }) {
   const handleShareChat = async () => {
     setShareMessage('Preparing share link...');
     try {
-      const encodedChat = await encodeSharedChat(messages);
-      const shareUrl = `${window.location.origin}${window.location.pathname}?shared=${encodedChat}`;
+      const response = await fetch(`${apiBaseUrl}/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.detail || 'Could not create a share link.');
+      const shareUrl = `${window.location.origin}/chat?share=${encodeURIComponent(data.share_id)}`;
       if (navigator.share) {
         await navigator.share({
           title: 'askSenior chat',

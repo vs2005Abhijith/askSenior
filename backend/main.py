@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
 import os
+import secrets
 import uuid
 from dotenv import load_dotenv
 from sqlalchemy import select
@@ -12,7 +13,7 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
-from job_queue import IngestionJob, SessionLocal, init_db, job_to_dict
+from job_queue import IngestionJob, SessionLocal, SharedChat, init_db, job_to_dict
 
 load_dotenv()
 
@@ -33,6 +34,23 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+
+
+class SharedMessage(BaseModel):
+    role: str
+    text: str
+
+
+class ShareChatRequest(BaseModel):
+    messages: list[SharedMessage]
+
+
+class ShareChatResponse(BaseModel):
+    share_id: str
+
+
+class SharedChatResponse(BaseModel):
+    messages: list[SharedMessage]
 
 
 class QuizRequest(BaseModel):
@@ -121,14 +139,13 @@ def init_chain():
 @app.on_event("startup")
 async def startup_event():
     global database_error
-    if admin_ingestion_enabled:
-        try:
-            init_db()
-            database_error = None
-        except Exception as e:
-            database_error = str(e)
-            print(f"Error initializing database: {e}")
-    else:
+    try:
+        init_db()
+        database_error = None
+    except Exception as e:
+        database_error = str(e)
+        print(f"Error initializing database: {e}")
+    if not admin_ingestion_enabled and not database_error:
         database_error = "Admin ingestion is temporarily disabled."
     init_chain()
 
@@ -152,6 +169,32 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         print(f"Error during chat handling: {e}")
         return ChatResponse(reply="The assistant could not complete that request. Please try again shortly.")
+
+
+@app.post("/share", response_model=ShareChatResponse)
+async def create_shared_chat(request: ShareChatRequest):
+    if not request.messages or len(request.messages) > 100:
+        raise HTTPException(status_code=400, detail="A shared chat must contain between 1 and 100 messages.")
+
+    share_id = secrets.token_urlsafe(9)
+    messages = [message.model_dump() for message in request.messages]
+    try:
+        with SessionLocal() as db:
+            db.add(SharedChat(id=share_id, messages=messages))
+            db.commit()
+    except Exception as error:
+        print(f"Could not save shared chat: {error}")
+        raise HTTPException(status_code=503, detail="Shared chat storage is unavailable.") from error
+    return ShareChatResponse(share_id=share_id)
+
+
+@app.get("/share/{share_id}", response_model=SharedChatResponse)
+async def get_shared_chat(share_id: str):
+    with SessionLocal() as db:
+        shared_chat = db.get(SharedChat, share_id)
+    if not shared_chat:
+        raise HTTPException(status_code=404, detail="Shared chat not found or expired.")
+    return SharedChatResponse(messages=shared_chat.messages)
 
 
 @app.post("/quiz", response_model=QuizResponse)
