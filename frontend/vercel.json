@@ -5,8 +5,6 @@
     { "source": "/admin/", "destination": "/" },
     { "source": "/quiz", "destination": "/" },
     { "source": "/quiz/", "destination": "/" },
-    { "source": "/dashboard", "destination": "/" },
-    { "source": "/dashboard/", "destination": "/" },
     { "source": "/chat", "destination": "/" },
     { "source": "/chat/", "destination": "/" }
   ]

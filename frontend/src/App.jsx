@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { collection, addDoc, onSnapshot } from 'firebase/firestore';
-import { auth, db, firebaseConfigured, googleProvider } from './firebase';
+import { auth, firebaseConfigured, googleProvider } from './firebase';
 import './App.css';
 
 function AuthScreen() {
@@ -228,105 +227,6 @@ const quizTopics = {
   CN: ['Computer Networks Fundamentals', 'Data Link Layer', 'Network Layer'],
 };
 
-const quizHistoryCollection = (userId) => collection(db, 'users', userId, 'quizHistory');
-
-function ProgressPanel({ user }) {
-  const [quizHistory, setQuizHistory] = useState([]);
-  const [historyError, setHistoryError] = useState('');
-  const totalAttempts = quizHistory.length;
-  const averageScore = totalAttempts
-    ? Math.round(quizHistory.reduce((total, quiz) => total + quiz.percentage, 0) / totalAttempts)
-    : 0;
-  const bestScore = totalAttempts ? Math.max(...quizHistory.map((quiz) => quiz.percentage)) : 0;
-  const recentQuizzes = quizHistory.slice(0, 5);
-  const monthlyProgress = Array.from({ length: 6 }, (_, index) => {
-    const date = new Date();
-    date.setDate(1);
-    date.setMonth(date.getMonth() - (5 - index));
-    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-    const monthQuizzes = quizHistory.filter((quiz) => {
-      const quizDate = new Date(quiz.completedAt);
-      return `${quizDate.getFullYear()}-${quizDate.getMonth()}` === monthKey;
-    });
-    const score = monthQuizzes.length
-      ? Math.round(monthQuizzes.reduce((total, quiz) => total + quiz.percentage, 0) / monthQuizzes.length)
-      : 0;
-    return {
-      label: date.toLocaleDateString('en-IN', { month: 'short' }),
-      score,
-      attempts: monthQuizzes.length,
-    };
-  });
-
-  useEffect(() => {
-    if (!db) return undefined;
-
-    return onSnapshot(quizHistoryCollection(user.uid), (snapshot) => {
-      const history = snapshot.docs.map((document) => {
-        const quiz = document.data();
-        return {
-          id: document.id,
-          ...quiz,
-          completedAt: quiz.completedAt?.toDate?.().toISOString() || quiz.completedAt,
-        };
-      }).sort((first, second) => new Date(second.completedAt) - new Date(first.completedAt));
-      setQuizHistory(history.slice(0, 20));
-      setHistoryError('');
-    }, (firestoreError) => {
-      setHistoryError(`Progress could not be loaded: ${firestoreError.message}`);
-    });
-  }, [user.uid]);
-
-  return (
-    <section className="progress-panel" aria-labelledby="progress-title">
-      <div className="progress-panel-heading">
-        <div>
-          <p className="eyebrow">Your learning space</p>
-          <h2 id="progress-title">Test progress</h2>
-        </div>
-        <span className="progress-summary">{totalAttempts} {totalAttempts === 1 ? 'test' : 'tests'} completed</span>
-      </div>
-      {historyError && <p className="progress-error">{historyError}</p>}
-      <div className="progress-stats">
-        <div><strong>{averageScore}%</strong><span>Average score</span></div>
-        <div><strong>{bestScore}%</strong><span>Best score</span></div>
-        <div><strong>{totalAttempts}</strong><span>Total attempts</span></div>
-      </div>
-      <div className="learning-progress">
-        <div className="learning-progress-label"><span>Overall progress</span><strong>{averageScore}%</strong></div>
-        <div className="progress-track"><div className="progress-value" style={{ width: `${averageScore}%` }} /></div>
-      </div>
-      <div className="monthly-progress">
-        <div className="learning-progress-label"><span>Monthly progress</span><span>Average score by month</span></div>
-        <div className="monthly-bars">
-          {monthlyProgress.map((month) => (
-            <div className="monthly-bar" key={month.label}>
-              <div className="monthly-bar-track" title={`${month.score}% average, ${month.attempts} ${month.attempts === 1 ? 'attempt' : 'attempts'}`}>
-                <div className="monthly-bar-value" style={{ height: `${month.score}%` }} />
-              </div>
-              <strong>{month.score}%</strong>
-              <span>{month.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      {recentQuizzes.length > 0 ? (
-        <div className="score-list">
-          <h3>Recent test scores</h3>
-          {recentQuizzes.map((quiz) => (
-            <div className="score-row" key={quiz.id}>
-              <div><strong>{quiz.subject}</strong><span>{quiz.topic}</span></div>
-              <div className="score-result"><strong>{quiz.score}/{quiz.total}</strong><span>{quiz.percentage}%</span></div>
-            </div>
-          ))}
-        </div>
-          ) : (
-            <p className="empty-progress">Complete your first quiz to see your scores and progress here.</p>
-          )}
-        </section>
-  );
-}
-
 function Dashboard({ user }) {
   const dashboardPrompt = 'What would you like to do?';
   const promptWords = dashboardPrompt.split(' ');
@@ -338,7 +238,6 @@ function Dashboard({ user }) {
         <div className="dashboard-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <span>{user.displayName || 'Student'}</span>
-          <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
       </header>
@@ -375,42 +274,6 @@ function Dashboard({ user }) {
             <small>Start practice</small>
           </button>
         </div>
-      </main>
-    </div>
-  );
-}
-
-function ProgressDashboard({ user }) {
-  const [isNavOpen, setIsNavOpen] = useState(false);
-
-  return (
-    <div className="progress-page">
-      <header className="progress-page-header">
-        <img className="dashboard-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
-        <div className="dashboard-account">
-          {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
-          <button
-            className="mobile-nav-toggle"
-            type="button"
-            aria-label="Open navigation"
-            aria-expanded={isNavOpen}
-            onClick={() => setIsNavOpen((open) => !open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-          <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Progress navigation">
-            <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
-            <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
-            <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
-            <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
-          </nav>
-        </div>
-      </header>
-      <main className="progress-page-content">
-        <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to home</button>
-        <ProgressPanel user={user} />
       </main>
     </div>
   );
@@ -535,27 +398,12 @@ function QuizApp({ user }) {
     setSelectedOption(optionIndex);
   };
 
-  const nextQuestion = async () => {
+  const nextQuestion = () => {
     const earned = selectedOption === currentQuestion.answer_index ? 1 : 0;
     const nextScore = score + earned;
     setScore(nextScore);
     if (currentIndex === questions.length - 1) {
-      const completedQuiz = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        subject,
-        topic: topic.trim(),
-        score: nextScore,
-        total: questions.length,
-        percentage: Math.round((nextScore / questions.length) * 100),
-        completedAt: new Date().toISOString(),
-      };
       setIsComplete(true);
-      try {
-        if (!db) throw new Error('Firestore is not configured.');
-        await addDoc(quizHistoryCollection(user.uid), completedQuiz);
-      } catch (historyError) {
-        setError(`Quiz completed, but the score could not be saved: ${historyError.message}`);
-      }
       return;
     }
     setCurrentIndex((index) => index + 1);
@@ -852,7 +700,6 @@ function ChatApp({ user }) {
           <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Chat navigation">
             <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
             <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
-            <button className="quiz-link" onClick={() => { window.location.href = '/dashboard'; }}>Progress</button>
             <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
           </nav>
         </div>
@@ -943,7 +790,6 @@ export default function App() {
 
   if (user === undefined) return null;
   if (!user) return <AuthScreen />;
-  if (window.location.pathname === '/dashboard') return <ProgressDashboard user={user} />;
   if (window.location.pathname === '/quiz') return <QuizApp user={user} />;
   if (window.location.pathname === '/chat') return <ChatApp user={user} />;
   return <Dashboard user={user} />;

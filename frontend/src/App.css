@@ -378,78 +378,6 @@
   background: radial-gradient(circle at 12% 8%, rgba(102, 57, 156, 0.06), transparent 30%), #ffffff;
 }
 
-.progress-page {
-  min-height: 100dvh;
-  width: 100%;
-  padding: 24px;
-  background: radial-gradient(circle at 12% 8%, rgba(102, 57, 156, 0.07), transparent 30%), #ffffff;
-}
-
-.progress-page-header,
-.progress-page-content {
-  width: 100%;
-  max-width: none;
-  margin: 0 auto;
-}
-
-.progress-page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.progress-page-header .dashboard-account {
-  position: relative;
-}
-
-.progress-page-header .mobile-nav-toggle {
-  display: block;
-}
-
-.progress-page-header .account-nav {
-  display: none;
-  position: absolute;
-  top: 48px;
-  right: 0;
-  z-index: 5;
-  flex-direction: column;
-  align-items: stretch;
-  min-width: 180px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 12px 28px rgba(44, 29, 58, 0.14);
-}
-
-.progress-page-header .account-nav.open {
-  display: flex;
-}
-
-.progress-page-header .account-nav .quiz-link,
-.progress-page-header .account-nav .signout-btn {
-  width: 100%;
-  min-height: 42px;
-  padding: 10px 14px;
-  font-size: 0.86rem;
-}
-
-.progress-page-content {
-  padding-top: clamp(48px, 10vh, 110px);
-}
-
-.progress-page-content > .text-btn {
-  margin-bottom: 16px;
-  color: var(--accent-color);
-  border-color: var(--border-color);
-}
-
-.progress-page-content > .progress-panel {
-  margin-top: 0;
-  width: 100%;
-}
-
 .dashboard-header,
 .dashboard-content {
   width: min(100%, 1080px);
@@ -1586,23 +1514,6 @@
     padding: 0;
   }
 
-  .progress-page {
-    padding: 0;
-  }
-
-  .progress-page-header {
-    align-items: flex-start;
-    padding: 14px 16px 0;
-  }
-
-  .progress-page-content {
-    padding: 36px 16px 34px;
-  }
-
-  .progress-page-content > .text-btn {
-    margin-bottom: 12px;
-  }
-
   .dashboard-header {
     align-items: flex-start;
     padding: 14px 16px 0;
@@ -1628,38 +1539,6 @@
     grid-template-columns: 1fr;
     gap: 14px;
     margin-top: 24px;
-  }
-
-  .progress-panel {
-    margin-top: 16px;
-    padding: 20px 16px;
-  }
-
-  .progress-panel-heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .progress-stats {
-    gap: 8px;
-  }
-
-  .progress-stats div {
-    padding: 12px 9px;
-  }
-
-  .progress-stats strong {
-    font-size: 1.05rem;
-  }
-
-  .progress-stats span {
-    font-size: 0.65rem;
-  }
-
-  .monthly-bars {
-    gap: 5px;
-    padding-inline: 4px;
   }
 
   .dashboard-option {
