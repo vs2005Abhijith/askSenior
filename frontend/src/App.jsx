@@ -64,11 +64,16 @@ function AboutPage() {
         <a className="text-btn about-home-link" href="/">Back to askSenior</a>
       </header>
       <section className="about-card">
-        <p className="eyebrow">The person behind askSenior</p>
-        <h1>Hi, I&apos;m Abhijith V S.</h1>
-        <p className="about-lead">
-          I&apos;m a S5 CSE student at RIT Kottayam and the creator of askSenior, a study companion built to make KTU syllabus preparation more focused and accessible.
-        </p>
+        <div className="about-intro">
+          <img className="about-profile-photo" src="/abhijith-profile.jpg" alt="Abhijith V S" />
+          <div>
+            <p className="eyebrow">The person behind askSenior</p>
+            <h1>Hi, I&apos;m Abhijith V S.</h1>
+            <p className="about-lead">
+              I&apos;m a 3rd year CSE student at RIT Kottayam and the creator of askSenior, a study companion built to make KTU syllabus preparation more focused and accessible.
+            </p>
+          </div>
+        </div>
         <div className="about-grid">
           <article className="about-detail">
             <span className="about-detail-number">01</span>
@@ -87,6 +92,7 @@ function AboutPage() {
             <strong>Let&apos;s keep learning and building.</strong>
           </div>
           <div className="about-contact-links">
+            <a href="https://portfolio-olff.onrender.com/" target="_blank" rel="noreferrer">Portfolio</a>
             <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314" target="_blank" rel="noreferrer">
               <svg className="linkedin-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="currentColor" d="M5.2 7.2A2.2 2.2 0 1 0 5.2 2.8a2.2 2.2 0 0 0 0 4.4ZM3.3 21.2h3.8V9.1H3.3v12.1ZM9.5 9.1v12.1h3.8v-6c0-1.6.3-3.2 2.3-3.2 1.9 0 1.9 1.9 1.9 3.3v5.9h3.8v-6.7c0-3.3-.7-5.8-4.7-5.8-1.9 0-3.2 1-3.7 2h-.1V9.1H9.5Z" />
