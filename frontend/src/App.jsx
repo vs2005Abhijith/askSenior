@@ -54,6 +54,53 @@ function AuthScreen() {
   );
 }
 
+function AboutPage() {
+  return (
+    <main className="about-page">
+      <header className="about-header">
+        <a className="about-logo-link" href="/" aria-label="Go to askSenior home">
+          <img className="about-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
+        </a>
+        <a className="text-btn about-home-link" href="/">Back to askSenior</a>
+      </header>
+      <section className="about-card">
+        <p className="eyebrow">The person behind askSenior</p>
+        <h1>Hi, I&apos;m Abhijith V S.</h1>
+        <p className="about-lead">
+          I&apos;m a S5 CSE student at RIT Kottayam and the creator of askSenior, a study companion built to make KTU syllabus preparation more focused and accessible.
+        </p>
+        <div className="about-grid">
+          <article className="about-detail">
+            <span className="about-detail-number">01</span>
+            <h2>Why askSenior?</h2>
+            <p>It turns syllabus-based notes into a simple place to ask questions, revise concepts, and practise with generated quizzes.</p>
+          </article>
+          <article className="about-detail">
+            <span className="about-detail-number">02</span>
+            <h2>Current focus</h2>
+            <p>The app currently supports selected KTU topics from TOC, DBMS, OS Disk Scheduling, and Computer Networks.</p>
+          </article>
+        </div>
+        <div className="about-contact">
+          <div>
+            <span className="about-contact-label">Connect with me</span>
+            <strong>Let&apos;s keep learning and building.</strong>
+          </div>
+          <div className="about-contact-links">
+            <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314" target="_blank" rel="noreferrer">
+              <svg className="linkedin-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M5.2 7.2A2.2 2.2 0 1 0 5.2 2.8a2.2 2.2 0 0 0 0 4.4ZM3.3 21.2h3.8V9.1H3.3v12.1ZM9.5 9.1v12.1h3.8v-6c0-1.6.3-3.2 2.3-3.2 1.9 0 1.9 1.9 1.9 3.3v5.9h3.8v-6.7c0-3.3-.7-5.8-4.7-5.8-1.9 0-3.2 1-3.7 2h-.1V9.1H9.5Z" />
+              </svg>
+              LinkedIn
+            </a>
+            <a href="mailto:vsabhijithin17@gmail.com">vsabhijithin17@gmail.com</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function AdminDashboard() {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
@@ -238,6 +285,7 @@ function Dashboard({ user }) {
         <div className="dashboard-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <span>{user.displayName || 'Student'}</span>
+          <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
       </header>
@@ -416,6 +464,7 @@ function QuizApp({ user }) {
         <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to home</button>
         <div className="quiz-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
       </header>
@@ -700,6 +749,7 @@ function ChatApp({ user }) {
           <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Chat navigation">
             <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
             <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
             <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
           </nav>
         </div>
@@ -764,6 +814,7 @@ function ChatApp({ user }) {
         <footer className="app-footer">
           <span>&copy; Abhijith V S, S5 CSE, RIT Kottayam</span>
           <span className="footer-links">
+            <a href="/about">About me</a>
             <a href="https://www.linkedin.com/in/abhijith-v-s-98b326314?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noreferrer">
               <svg className="linkedin-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="currentColor" d="M5.2 7.2A2.2 2.2 0 1 0 5.2 2.8a2.2 2.2 0 0 0 0 4.4ZM3.3 21.2h3.8V9.1H3.3v12.1ZM9.5 9.1v12.1h3.8v-6c0-1.6.3-3.2 2.3-3.2 1.9 0 1.9 1.9 1.9 3.3v5.9h3.8v-6.7c0-3.3-.7-5.8-4.7-5.8-1.9 0-3.2 1-3.7 2h-.1V9.1H9.5Z" />
@@ -788,6 +839,7 @@ export default function App() {
     return onAuthStateChanged(auth, setUser);
   }, []);
 
+  if (window.location.pathname === '/about') return <AboutPage />;
   if (user === undefined) return null;
   if (!user) return <AuthScreen />;
   if (window.location.pathname === '/quiz') return <QuizApp user={user} />;

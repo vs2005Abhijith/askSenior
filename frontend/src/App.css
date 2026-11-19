@@ -378,6 +378,149 @@
   background: radial-gradient(circle at 12% 8%, rgba(102, 57, 156, 0.06), transparent 30%), #ffffff;
 }
 
+.about-page {
+  min-height: 100dvh;
+  padding: 24px;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(102, 57, 156, 0.13), transparent 30%),
+    radial-gradient(circle at 90% 80%, rgba(220, 197, 235, 0.45), transparent 34%),
+    #ffffff;
+}
+
+.about-header,
+.about-card {
+  width: min(100%, 1020px);
+  margin: 0 auto;
+}
+
+.about-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.about-logo-link {
+  display: block;
+}
+
+.about-logo {
+  display: block;
+  width: 150px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.about-home-link {
+  color: var(--accent-color);
+  border-color: var(--border-color);
+  text-decoration: none;
+}
+
+.about-card {
+  margin-top: clamp(54px, 10vh, 120px);
+  padding: clamp(28px, 6vw, 70px);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  box-shadow: 0 24px 70px rgba(80, 48, 116, 0.12);
+}
+
+.about-card h1 {
+  max-width: 760px;
+  margin-top: 10px;
+  color: var(--text-main);
+  font-size: clamp(2.8rem, 7vw, 5.8rem);
+  line-height: 0.98;
+  letter-spacing: -0.07em;
+}
+
+.about-lead {
+  max-width: 720px;
+  margin-top: 28px;
+  color: var(--text-muted);
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  line-height: 1.7;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.about-detail {
+  padding: 24px;
+  background: linear-gradient(145deg, #ffffff, #f8f2fc);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+}
+
+.about-detail-number,
+.about-contact-label {
+  color: var(--accent-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.about-detail h2 {
+  margin-top: 30px;
+  font-size: 1.35rem;
+}
+
+.about-detail p {
+  margin-top: 10px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.about-contact {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-color);
+}
+
+.about-contact strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.05rem;
+}
+
+.about-contact-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 16px;
+}
+
+.about-contact-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent-color);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.about-contact-links a:hover {
+  color: var(--accent-hover);
+}
+
+.about-contact-links .linkedin-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .dashboard-header,
 .dashboard-content {
   width: min(100%, 1080px);
@@ -1512,6 +1655,52 @@
 
   .dashboard-shell {
     padding: 0;
+  }
+
+  .about-page {
+    padding: 14px;
+  }
+
+  .about-header {
+    align-items: flex-start;
+  }
+
+  .about-logo {
+    width: 125px;
+  }
+
+  .about-card {
+    margin-top: 38px;
+    padding: 26px 20px;
+    border-radius: 22px;
+  }
+
+  .about-card h1 {
+    font-size: clamp(2.65rem, 14vw, 4.4rem);
+  }
+
+  .about-lead {
+    margin-top: 20px;
+    font-size: 0.98rem;
+  }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+    margin-top: 32px;
+  }
+
+  .about-detail h2 {
+    margin-top: 22px;
+  }
+
+  .about-contact {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: 32px;
+  }
+
+  .about-contact-links {
+    justify-content: flex-start;
   }
 
   .dashboard-header {
