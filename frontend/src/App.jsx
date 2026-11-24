@@ -67,8 +67,8 @@ function AboutPage() {
         <div className="about-intro">
           <img className="about-profile-photo" src="/abhijith-profile.jpg" alt="Abhijith V S" />
           <div>
-            <p className="eyebrow">The person behind askSenior</p>
-            <h1>Hi, I&apos;m Abhijith V S.</h1>
+            <p className="eyebrow"> behind askSenior</p>
+            <h2>Hi, I&apos;m Abhijith V S.</h2>
             <p className="about-lead">
               I&apos;m a 3rd year CSE student at RIT Kottayam and the creator of askSenior, a study companion built to make KTU syllabus preparation more focused and accessible.
             </p>
