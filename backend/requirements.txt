@@ -5,7 +5,7 @@ langchain-community
 langchain-google-genai
 langchain-pinecone
 pymupdf
-pinecone-client
+pinecone
 python-dotenv
 pydantic
 python-multipart

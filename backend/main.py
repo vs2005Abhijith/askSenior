@@ -116,7 +116,7 @@ def verify_firebase_user(authorization: str | None):
         raise HTTPException(status_code=401, detail="Sign in to upload notes.")
 
     token = authorization.removeprefix("Bearer ").strip()
-    project_id = os.getenv("FIREBASE_PROJECT_ID", "asksenior-51f7e")
+    project_id = (os.getenv("FIREBASE_PROJECT_ID") or "asksenior-51f7e").strip().strip("'\"")
     try:
         header = jwt.get_unverified_header(token)
         key_id = header.get("kid")
