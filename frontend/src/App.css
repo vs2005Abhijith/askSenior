@@ -1182,12 +1182,18 @@
 /* Notes library */
 .notes-page {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
   padding: 24px clamp(18px, 5vw, 72px) 64px;
   color: var(--text-main);
   background: radial-gradient(circle at 85% 8%, rgba(102, 57, 156, 0.12), transparent 30%), var(--bg-dark);
 }
 
 .notes-header {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1237,6 +1243,8 @@
 }
 
 .notes-card {
+  width: 100%;
+  box-sizing: border-box;
   max-width: 1120px;
   margin: 0 auto;
   padding: clamp(24px, 5vw, 52px);
@@ -1275,12 +1283,14 @@
 }
 
 .notes-fields-grid {
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
 .notes-field {
+  min-width: 0;
   display: grid;
   gap: 8px;
   color: var(--text-muted);
@@ -1296,6 +1306,8 @@
 .notes-field select,
 .notes-filters input,
 .notes-filters select {
+  box-sizing: border-box;
+  min-width: 0;
   width: 100%;
   padding: 12px 13px;
   color: var(--text-main);
@@ -1325,6 +1337,8 @@
 }
 
 .notes-file-field input {
+  max-width: 100%;
+  min-width: 0;
   font: inherit;
 }
 
@@ -1445,6 +1459,7 @@
   }
 
   .notes-header-actions {
+    min-width: 0;
     gap: 7px;
   }
 
