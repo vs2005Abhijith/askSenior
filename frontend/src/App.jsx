@@ -480,6 +480,7 @@ function NotesPage({ user }) {
 function Dashboard({ user }) {
   const dashboardPrompt = 'What would you like to do?';
   const promptWords = dashboardPrompt.split(' ');
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   return (
     <div className="dashboard-shell">
@@ -488,10 +489,13 @@ function Dashboard({ user }) {
         <div className="dashboard-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <span>{user.displayName || 'Student'}</span>
-          <button className="quiz-link" onClick={() => { window.location.href = '/notes'; }}>Notes</button>
-          <button className="quiz-link" onClick={() => { window.location.href = '/add-notes'; }}>Add notes</button>
-          <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
-          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+          <button className="dashboard-mobile-toggle" type="button" onClick={() => setIsNavOpen((open) => !open)} aria-label="Open navigation" aria-expanded={isNavOpen}>☰</button>
+          <nav className={`dashboard-nav ${isNavOpen ? 'open' : ''}`} aria-label="Home navigation">
+            <button className="quiz-link" onClick={() => { window.location.href = '/notes'; }}>Notes</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/add-notes'; }}>Add notes</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
+            <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+          </nav>
         </div>
       </header>
       <main className="dashboard-content">

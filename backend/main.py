@@ -101,6 +101,16 @@ firebase_certificates = {}
 firebase_certificates_expires_at = 0
 
 
+def refresh_firebase_certificates():
+    global firebase_certificates, firebase_certificates_expires_at
+    with urlopen(
+        "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com",
+        timeout=5,
+    ) as response:
+        firebase_certificates = json.loads(response.read())
+    firebase_certificates_expires_at = time.time() + 3600
+
+
 def verify_firebase_user(authorization: str | None):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Sign in to upload notes.")
@@ -113,18 +123,15 @@ def verify_firebase_user(authorization: str | None):
         if not key_id:
             raise ValueError("The Firebase token has no key id.")
 
-        global firebase_certificates, firebase_certificates_expires_at
         if time.time() >= firebase_certificates_expires_at:
-            with urlopen(
-                "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com",
-                timeout=5,
-            ) as response:
-                firebase_certificates = json.loads(response.read())
-            firebase_certificates_expires_at = time.time() + 3600
+            refresh_firebase_certificates()
 
         certificate = firebase_certificates.get(key_id)
         if not certificate:
-            raise ValueError("The Firebase token key is not available.")
+            refresh_firebase_certificates()
+            certificate = firebase_certificates.get(key_id)
+        if not certificate:
+            raise ValueError("The Firebase token key is not available. Check Firebase project configuration.")
         claims = jwt.decode(
             token,
             certificate,
@@ -135,7 +142,7 @@ def verify_firebase_user(authorization: str | None):
         return claims["sub"]
     except (jwt.PyJWTError, KeyError, ValueError, OSError) as error:
         print(f"Firebase token verification failed: {error}")
-        raise HTTPException(status_code=401, detail="Your sign-in session has expired. Sign in again.") from error
+        raise HTTPException(status_code=401, detail="Firebase sign-in verification failed. Confirm FIREBASE_PROJECT_ID is configured on the backend, then sign in again.") from error
 
 
 def note_to_dict(note: Note):
