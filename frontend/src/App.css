@@ -413,9 +413,16 @@
 }
 
 .about-home-link {
-  color: var(--accent-color);
-  border-color: var(--border-color);
+  color: #ffffff;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   text-decoration: none;
+}
+
+.about-home-link:hover {
+  color: #ffffff;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .about-card {
