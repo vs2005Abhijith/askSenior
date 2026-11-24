@@ -55,6 +55,26 @@ class SharedChat(Base):
     )
 
 
+class Note(Base):
+    __tablename__ = "notes"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(100), nullable=False, default="application/pdf")
+    pdf_data: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    department: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    semester: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    subject: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    scheme: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    uploader_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    uploader_semester: Mapped[str] = mapped_column(String(40), nullable=False)
+    uploader_college: Mapped[str] = mapped_column(String(180), nullable=False)
+    uploader_uid: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True
+    )
+
+
 def init_db():
     Base.metadata.create_all(engine)
 

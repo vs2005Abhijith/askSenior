@@ -280,6 +280,200 @@ const quizTopics = {
   CN: ['Computer Networks Fundamentals', 'Data Link Layer', 'Network Layer'],
 };
 
+const noteDepartments = ['CSE', 'ECE', 'EEE', 'ME', 'CE', 'Other'];
+const noteSemesters = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'];
+const noteSchemes = ['2015', '2019', '2024', 'Other'];
+
+function NotesHeader({ user, title }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <header className="notes-header">
+      <a href="/" aria-label="Go to askSenior home">
+        <img className="notes-logo" src="/asksenior-logo.jpeg" alt="askSenior" />
+      </a>
+      <div className="notes-header-actions">
+        <span className="notes-page-title">{title}</span>
+        {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+        <button className="notes-mobile-toggle" type="button" onClick={() => setIsOpen((open) => !open)} aria-label="Open notes navigation" aria-expanded={isOpen}>☰</button>
+        <nav className={`notes-header-nav ${isOpen ? 'open' : ''}`} aria-label="Notes navigation">
+          <a className="quiz-link" href="/">Home</a>
+          <a className="quiz-link" href="/notes">Download notes</a>
+          <a className="quiz-link" href="/add-notes">Add notes</a>
+          <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function AddNotesPage({ user }) {
+  const apiBaseUrl = import.meta.env.DEV
+    ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
+    : '/api';
+  const [fields, setFields] = useState({
+    department: 'CSE',
+    semester: 'S5',
+    subject: '',
+    scheme: '2024',
+    uploader_name: user.displayName || '',
+    uploader_semester: 'S5',
+    uploader_college: 'RIT Kottayam',
+  });
+  const [file, setFile] = useState(null);
+  const [status, setStatus] = useState({ type: '', text: '' });
+  const [isUploading, setIsUploading] = useState(false);
+
+  const updateField = (event) => {
+    setFields((current) => ({ ...current, [event.target.name]: event.target.value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!file) {
+      setStatus({ type: 'error', text: 'Choose a PDF before uploading.' });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setStatus({ type: 'error', text: 'Notes must be 10 MB or smaller.' });
+      return;
+    }
+
+    setStatus({ type: '', text: '' });
+    setIsUploading(true);
+    const formData = new FormData();
+    Object.entries(fields).forEach(([name, value]) => formData.append(name, value));
+    formData.append('file', file);
+
+    try {
+      const token = await user.getIdToken(true);
+      const response = await fetch(`${apiBaseUrl}/notes`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.detail || 'Could not upload the note.');
+      setFile(null);
+      event.target.reset();
+      setStatus({ type: 'success', text: 'Note uploaded successfully. It is now available in Download notes.' });
+    } catch (uploadError) {
+      setStatus({ type: 'error', text: uploadError.message });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <main className="notes-page">
+      <NotesHeader user={user} title="Add notes" />
+      <section className="notes-card notes-form-card">
+        <div className="notes-intro">
+          <p className="eyebrow">askSenior / community notes</p>
+          <h1>Add notes</h1>
+          <p>Tell us where the notes belong, then upload a PDF for other students to find and download.</p>
+        </div>
+        <form className="notes-form" onSubmit={handleSubmit}>
+          <div className="notes-section-title">Note details</div>
+          <div className="notes-fields-grid">
+            <label className="notes-field">Department<select name="department" value={fields.department} onChange={updateField}>{noteDepartments.map((item) => <option key={item}>{item}</option>)}</select></label>
+            <label className="notes-field">Semester<select name="semester" value={fields.semester} onChange={updateField}>{noteSemesters.map((item) => <option key={item}>{item}</option>)}</select></label>
+            <label className="notes-field">Subject<input name="subject" value={fields.subject} onChange={updateField} placeholder="e.g. Semiconductor Physics" required /></label>
+            <label className="notes-field">Scheme<select name="scheme" value={fields.scheme} onChange={updateField}>{noteSchemes.map((item) => <option key={item}>{item}</option>)}</select></label>
+          </div>
+          <div className="notes-section-title">Your details</div>
+          <div className="notes-fields-grid">
+            <label className="notes-field">Your name<input name="uploader_name" value={fields.uploader_name} onChange={updateField} placeholder="Your name" required /></label>
+            <label className="notes-field">Your semester<select name="uploader_semester" value={fields.uploader_semester} onChange={updateField}>{noteSemesters.map((item) => <option key={item}>{item}</option>)}</select></label>
+            <label className="notes-field notes-field-wide">College<input name="uploader_college" value={fields.uploader_college} onChange={updateField} placeholder="College name" required /></label>
+          </div>
+          <label className="notes-file-field">PDF file<input type="file" accept="application/pdf,.pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} required /><span>{file ? file.name : 'Choose a PDF, up to 10 MB'}</span></label>
+          <button className="notes-submit-btn" type="submit" disabled={isUploading}>{isUploading ? 'Uploading note...' : 'Upload note'}</button>
+        </form>
+        {status.text && <div className={`notes-status ${status.type}`} role="status">{status.text}</div>}
+      </section>
+    </main>
+  );
+}
+
+function NotesPage({ user }) {
+  const apiBaseUrl = import.meta.env.DEV
+    ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
+    : '/api';
+  const [filters, setFilters] = useState({ department: '', semester: '', subject: '', scheme: '' });
+  const [notes, setNotes] = useState([]);
+  const [status, setStatus] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const query = new URLSearchParams(Object.entries(filters).filter(([, value]) => value.trim()));
+    fetch(`${apiBaseUrl}/notes?${query}`, { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.detail || 'Could not load notes.');
+        return data;
+      })
+      .then((data) => {
+        setNotes(data);
+        setStatus('');
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') setStatus(error.message);
+      })
+      .finally(() => setIsLoading(false));
+    return () => controller.abort();
+  }, [apiBaseUrl, filters]);
+
+  const updateFilter = (event) => {
+    setIsLoading(true);
+    setFilters((current) => ({ ...current, [event.target.name]: event.target.value }));
+  };
+  const groupedNotes = notes.reduce((groups, note) => {
+    const category = `${note.department} / ${note.semester} / ${note.subject} / Scheme ${note.scheme}`;
+    groups[category] = [...(groups[category] || []), note];
+    return groups;
+  }, {});
+
+  return (
+    <main className="notes-page">
+      <NotesHeader user={user} title="Download notes" />
+      <section className="notes-card notes-library-card">
+        <div className="notes-intro">
+          <p className="eyebrow">askSenior / notes library</p>
+          <h1>Download notes</h1>
+          <p>Browse notes by department, semester, subject, and scheme.</p>
+        </div>
+        <div className="notes-filters">
+          <select name="department" value={filters.department} onChange={updateFilter} aria-label="Filter by department"><option value="">All departments</option>{noteDepartments.map((item) => <option key={item}>{item}</option>)}</select>
+          <select name="semester" value={filters.semester} onChange={updateFilter} aria-label="Filter by semester"><option value="">All semesters</option>{noteSemesters.map((item) => <option key={item}>{item}</option>)}</select>
+          <input name="subject" value={filters.subject} onChange={updateFilter} placeholder="Filter subject" aria-label="Filter by subject" />
+          <select name="scheme" value={filters.scheme} onChange={updateFilter} aria-label="Filter by scheme"><option value="">All schemes</option>{noteSchemes.map((item) => <option key={item}>{item}</option>)}</select>
+        </div>
+        {status && <div className="notes-status error" role="alert">{status}</div>}
+        {isLoading ? <p className="notes-empty">Loading notes...</p> : !notes.length ? <p className="notes-empty">No notes match these filters yet. Add the first one.</p> : (
+          <div className="notes-groups">
+            {Object.entries(groupedNotes).map(([category, categoryNotes]) => (
+              <section className="notes-group" key={category}>
+                <h2>{category}</h2>
+                {categoryNotes.map((note) => (
+                  <article className="note-item" key={note.id}>
+                    <div>
+                      <strong>{note.filename}</strong>
+                      <p>Added by {note.uploader_name} · {note.uploader_college} · {new Date(note.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <a className="note-download-btn" href={`${apiBaseUrl}/notes/${encodeURIComponent(note.id)}/download`}>Download</a>
+                  </article>
+                ))}
+              </section>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
 function Dashboard({ user }) {
   const dashboardPrompt = 'What would you like to do?';
   const promptWords = dashboardPrompt.split(' ');
@@ -291,6 +485,8 @@ function Dashboard({ user }) {
         <div className="dashboard-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
           <span>{user.displayName || 'Student'}</span>
+          <button className="quiz-link" onClick={() => { window.location.href = '/notes'; }}>Notes</button>
+          <button className="quiz-link" onClick={() => { window.location.href = '/add-notes'; }}>Add notes</button>
           <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
@@ -470,6 +666,8 @@ function QuizApp({ user }) {
         <button className="text-btn" onClick={() => { window.location.href = '/'; }}>Back to home</button>
         <div className="quiz-account">
           {user.photoURL && <img className="account-avatar" src={user.photoURL} alt="" />}
+          <button className="quiz-link" onClick={() => { window.location.href = '/notes'; }}>Notes</button>
+          <button className="quiz-link" onClick={() => { window.location.href = '/add-notes'; }}>Add notes</button>
           <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
           <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
         </div>
@@ -755,6 +953,8 @@ function ChatApp({ user }) {
           <nav className={`account-nav ${isNavOpen ? 'open' : ''}`} aria-label="Chat navigation">
             <button className="quiz-link" onClick={() => { window.location.href = '/'; }}>Home</button>
             <button className="quiz-link" onClick={() => { window.location.href = '/quiz'; }}>Quiz</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/notes'; }}>Notes</button>
+            <button className="quiz-link" onClick={() => { window.location.href = '/add-notes'; }}>Add notes</button>
             <button className="quiz-link" onClick={() => { window.location.href = '/about'; }}>About</button>
             <button className="signout-btn" onClick={() => signOut(auth)}>Sign out</button>
           </nav>
@@ -850,5 +1050,7 @@ export default function App() {
   if (!user) return <AuthScreen />;
   if (window.location.pathname === '/quiz') return <QuizApp user={user} />;
   if (window.location.pathname === '/chat') return <ChatApp user={user} />;
+  if (window.location.pathname === '/add-notes') return <AddNotesPage user={user} />;
+  if (window.location.pathname === '/notes') return <NotesPage user={user} />;
   return <Dashboard user={user} />;
 }

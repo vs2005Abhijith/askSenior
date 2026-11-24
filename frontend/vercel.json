@@ -8,6 +8,10 @@
     { "source": "/about", "destination": "/" },
     { "source": "/about/", "destination": "/" },
     { "source": "/chat", "destination": "/" },
-    { "source": "/chat/", "destination": "/" }
+    { "source": "/chat/", "destination": "/" },
+    { "source": "/add-notes", "destination": "/" },
+    { "source": "/add-notes/", "destination": "/" },
+    { "source": "/notes", "destination": "/" },
+    { "source": "/notes/", "destination": "/" }
   ]
 }

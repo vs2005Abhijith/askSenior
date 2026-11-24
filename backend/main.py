@@ -1,10 +1,13 @@
-from fastapi import FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
 import os
+import re
 import secrets
+import time
 import uuid
+from urllib.request import urlopen
 from dotenv import load_dotenv
 from sqlalchemy import select
 
@@ -13,7 +16,9 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
-from job_queue import IngestionJob, SessionLocal, SharedChat, init_db, job_to_dict
+import jwt
+
+from job_queue import IngestionJob, Note, SessionLocal, SharedChat, init_db, job_to_dict
 
 load_dotenv()
 
@@ -53,6 +58,19 @@ class SharedChatResponse(BaseModel):
     messages: list[SharedMessage]
 
 
+class NoteResponse(BaseModel):
+    id: str
+    filename: str
+    department: str
+    semester: str
+    subject: str
+    scheme: str
+    uploader_name: str
+    uploader_semester: str
+    uploader_college: str
+    created_at: str
+
+
 class QuizRequest(BaseModel):
     subject: str
     topic: str
@@ -78,6 +96,60 @@ database_error = None
 admin_ingestion_enabled = os.getenv("ENABLE_ADMIN_INGESTION", "false").lower() == "true"
 quiz_llm = None
 quiz_retriever = None
+firebase_certificates = {}
+firebase_certificates_expires_at = 0
+
+
+def verify_firebase_user(authorization: str | None):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Sign in to upload notes.")
+
+    token = authorization.removeprefix("Bearer ").strip()
+    project_id = os.getenv("FIREBASE_PROJECT_ID", "asksenior-51f7e")
+    try:
+        header = jwt.get_unverified_header(token)
+        key_id = header.get("kid")
+        if not key_id:
+            raise ValueError("The Firebase token has no key id.")
+
+        global firebase_certificates, firebase_certificates_expires_at
+        if time.time() >= firebase_certificates_expires_at:
+            with urlopen(
+                "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com",
+                timeout=5,
+            ) as response:
+                firebase_certificates = json.loads(response.read())
+            firebase_certificates_expires_at = time.time() + 3600
+
+        certificate = firebase_certificates.get(key_id)
+        if not certificate:
+            raise ValueError("The Firebase token key is not available.")
+        claims = jwt.decode(
+            token,
+            certificate,
+            algorithms=["RS256"],
+            audience=project_id,
+            issuer=f"https://securetoken.google.com/{project_id}",
+        )
+        return claims["sub"]
+    except (jwt.PyJWTError, KeyError, ValueError, OSError) as error:
+        print(f"Firebase token verification failed: {error}")
+        raise HTTPException(status_code=401, detail="Your sign-in session has expired. Sign in again.") from error
+
+
+def note_to_dict(note: Note):
+    return {
+        "id": note.id,
+        "filename": note.filename,
+        "department": note.department,
+        "semester": note.semester,
+        "subject": note.subject,
+        "scheme": note.scheme,
+        "uploader_name": note.uploader_name,
+        "uploader_semester": note.uploader_semester,
+        "uploader_college": note.uploader_college,
+        "created_at": note.created_at.isoformat(),
+    }
 
 
 def require_admin(admin_key: str | None):
@@ -232,6 +304,95 @@ Study context:
     except Exception as error:
         print(f"Error creating quiz: {error}")
         raise HTTPException(status_code=502, detail="Could not create the quiz. Please try again.") from error
+
+
+@app.post("/notes", response_model=NoteResponse)
+async def upload_note(
+    file: UploadFile = File(...),
+    department: str = Form(...),
+    semester: str = Form(...),
+    subject: str = Form(...),
+    scheme: str = Form(...),
+    uploader_name: str = Form(...),
+    uploader_semester: str = Form(...),
+    uploader_college: str = Form(...),
+    authorization: str | None = Header(default=None),
+):
+    uploader_uid = verify_firebase_user(authorization)
+    values = {
+        "department": department.strip(),
+        "semester": semester.strip(),
+        "subject": subject.strip(),
+        "scheme": scheme.strip(),
+        "uploader_name": uploader_name.strip(),
+        "uploader_semester": uploader_semester.strip(),
+        "uploader_college": uploader_college.strip(),
+    }
+    if any(not value for value in values.values()):
+        raise HTTPException(status_code=400, detail="Complete all note details before uploading.")
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    contents = await file.read()
+    max_size = 10 * 1024 * 1024
+    if not contents:
+        raise HTTPException(status_code=400, detail="The selected PDF is empty.")
+    if len(contents) > max_size:
+        raise HTTPException(status_code=413, detail="Notes must be 10 MB or smaller.")
+
+    note = Note(
+        id=secrets.token_urlsafe(12),
+        filename=file.filename,
+        mime_type="application/pdf",
+        pdf_data=contents,
+        uploader_uid=uploader_uid,
+        **values,
+    )
+    try:
+        with SessionLocal() as db:
+            db.add(note)
+            db.commit()
+            db.refresh(note)
+            return note_to_dict(note)
+    except Exception as error:
+        print(f"Could not save note: {error}")
+        raise HTTPException(status_code=503, detail="Note storage is unavailable.") from error
+
+
+@app.get("/notes", response_model=list[NoteResponse])
+async def list_notes(
+    department: str | None = Query(default=None),
+    semester: str | None = Query(default=None),
+    subject: str | None = Query(default=None),
+    scheme: str | None = Query(default=None),
+):
+    with SessionLocal() as db:
+        statement = select(Note).order_by(Note.created_at.desc())
+        for column, value in (
+            (Note.department, department),
+            (Note.semester, semester),
+            (Note.subject, subject),
+            (Note.scheme, scheme),
+        ):
+            if value and value.strip():
+                statement = statement.where(column == value.strip())
+        notes = db.scalars(statement).all()
+    return [note_to_dict(note) for note in notes]
+
+
+@app.get("/notes/{note_id}/download")
+async def download_note(note_id: str):
+    with SessionLocal() as db:
+        note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found.")
+
+    safe_filename = re.sub(r"[^A-Za-z0-9._-]+", "_", note.filename).strip("._") or "note.pdf"
+    return Response(
+        content=note.pdf_data,
+        media_type=note.mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
+    )
 
 
 @app.post("/admin/ingest")
