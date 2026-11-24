@@ -370,7 +370,7 @@ function AddNotesPage({ user }) {
       <NotesHeader user={user} title="Add notes" />
       <section className="notes-card notes-form-card">
         <div className="notes-intro">
-          <p className="eyebrow">askSenior / community notes</p>
+          <p className="eyebrow">askSenior / upload notes</p>
           <h1>Add notes</h1>
           <p>Tell us where the notes belong, then upload a PDF for other students to find and download.</p>
         </div>
