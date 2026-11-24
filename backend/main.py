@@ -5,10 +5,10 @@ import json
 import os
 import re
 import secrets
-import time
 import uuid
-from urllib.request import urlopen
 from dotenv import load_dotenv
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
 from sqlalchemy import select
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
@@ -16,8 +16,6 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
-import jwt
-
 from job_queue import IngestionJob, Note, SessionLocal, SharedChat, init_db, job_to_dict
 
 load_dotenv()
@@ -97,20 +95,6 @@ database_error = None
 admin_ingestion_enabled = os.getenv("ENABLE_ADMIN_INGESTION", "false").lower() == "true"
 quiz_llm = None
 quiz_retriever = None
-firebase_certificates = {}
-firebase_certificates_expires_at = 0
-
-
-def refresh_firebase_certificates():
-    global firebase_certificates, firebase_certificates_expires_at
-    with urlopen(
-        "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com",
-        timeout=5,
-    ) as response:
-        firebase_certificates = json.loads(response.read())
-    firebase_certificates_expires_at = time.time() + 3600
-
-
 def verify_firebase_user(authorization: str | None):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Sign in to upload notes.")
@@ -118,29 +102,13 @@ def verify_firebase_user(authorization: str | None):
     token = authorization.removeprefix("Bearer ").strip()
     project_id = (os.getenv("FIREBASE_PROJECT_ID") or "asksenior-51f7e").strip().strip("'\"")
     try:
-        header = jwt.get_unverified_header(token)
-        key_id = header.get("kid")
-        if not key_id:
-            raise ValueError("The Firebase token has no key id.")
-
-        if time.time() >= firebase_certificates_expires_at:
-            refresh_firebase_certificates()
-
-        certificate = firebase_certificates.get(key_id)
-        if not certificate:
-            refresh_firebase_certificates()
-            certificate = firebase_certificates.get(key_id)
-        if not certificate:
-            raise ValueError("The Firebase token key is not available. Check Firebase project configuration.")
-        claims = jwt.decode(
+        claims = id_token.verify_firebase_token(
             token,
-            certificate,
-            algorithms=["RS256"],
+            google_requests.Request(),
             audience=project_id,
-            issuer=f"https://securetoken.google.com/{project_id}",
         )
         return claims["sub"]
-    except (jwt.PyJWTError, KeyError, ValueError, OSError) as error:
+    except (KeyError, ValueError, OSError) as error:
         print(f"Firebase token verification failed: {error}")
         raise HTTPException(status_code=401, detail="Firebase sign-in verification failed. Confirm FIREBASE_PROJECT_ID is configured on the backend, then sign in again.") from error
 

@@ -8,6 +8,7 @@ pymupdf
 pinecone
 python-dotenv
 pydantic
+google-auth
 python-multipart
 sqlalchemy
 passlib[bcrypt]
