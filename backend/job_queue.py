@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from sqlalchemy import DateTime, Integer, JSON, LargeBinary, String, Text, create_engine
+from sqlalchemy import DateTime, Integer, JSON, LargeBinary, String, Text, create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 load_dotenv()
@@ -65,6 +65,7 @@ class Note(Base):
     department: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
     semester: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
     subject: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    module_no: Mapped[str] = mapped_column(String(80), nullable=False, default="General", index=True)
     scheme: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
     uploader_name: Mapped[str] = mapped_column(String(120), nullable=False)
     uploader_semester: Mapped[str] = mapped_column(String(40), nullable=False)
@@ -77,6 +78,11 @@ class Note(Base):
 
 def init_db():
     Base.metadata.create_all(engine)
+    if "notes" in inspect(engine).get_table_names():
+        note_columns = {column["name"] for column in inspect(engine).get_columns("notes")}
+        if "module_no" not in note_columns:
+            with engine.begin() as connection:
+                connection.execute(text("ALTER TABLE notes ADD COLUMN module_no VARCHAR(80) NOT NULL DEFAULT 'General'"))
 
 
 def job_to_dict(job: IngestionJob):

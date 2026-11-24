@@ -64,6 +64,7 @@ class NoteResponse(BaseModel):
     department: str
     semester: str
     subject: str
+    module_no: str
     scheme: str
     uploader_name: str
     uploader_semester: str
@@ -144,6 +145,7 @@ def note_to_dict(note: Note):
         "department": note.department,
         "semester": note.semester,
         "subject": note.subject,
+        "module_no": note.module_no,
         "scheme": note.scheme,
         "uploader_name": note.uploader_name,
         "uploader_semester": note.uploader_semester,
@@ -312,6 +314,7 @@ async def upload_note(
     department: str = Form(...),
     semester: str = Form(...),
     subject: str = Form(...),
+    module_no: str = Form(...),
     scheme: str = Form(...),
     uploader_name: str = Form(...),
     uploader_semester: str = Form(...),
@@ -323,6 +326,7 @@ async def upload_note(
         "department": department.strip(),
         "semester": semester.strip(),
         "subject": subject.strip(),
+        "module_no": module_no.strip(),
         "scheme": scheme.strip(),
         "uploader_name": uploader_name.strip(),
         "uploader_semester": uploader_semester.strip(),
@@ -364,6 +368,7 @@ async def list_notes(
     department: str | None = Query(default=None),
     semester: str | None = Query(default=None),
     subject: str | None = Query(default=None),
+    module_no: str | None = Query(default=None),
     scheme: str | None = Query(default=None),
 ):
     with SessionLocal() as db:
@@ -372,6 +377,7 @@ async def list_notes(
             (Note.department, department),
             (Note.semester, semester),
             (Note.subject, subject),
+            (Note.module_no, module_no),
             (Note.scheme, scheme),
         ):
             if value and value.strip():

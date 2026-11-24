@@ -315,6 +315,7 @@ function AddNotesPage({ user }) {
     department: 'CSE',
     semester: 'S5',
     subject: '',
+    module_no: '',
     scheme: '2024',
     uploader_name: user.displayName || '',
     uploader_semester: 'S5',
@@ -379,6 +380,7 @@ function AddNotesPage({ user }) {
             <label className="notes-field">Department<select name="department" value={fields.department} onChange={updateField}>{noteDepartments.map((item) => <option key={item}>{item}</option>)}</select></label>
             <label className="notes-field">Semester<select name="semester" value={fields.semester} onChange={updateField}>{noteSemesters.map((item) => <option key={item}>{item}</option>)}</select></label>
             <label className="notes-field">Subject<input name="subject" value={fields.subject} onChange={updateField} placeholder="e.g. Semiconductor Physics" required /></label>
+            <label className="notes-field">Module number<input name="module_no" value={fields.module_no} onChange={updateField} placeholder="e.g. Module I" required /></label>
             <label className="notes-field">Scheme<select name="scheme" value={fields.scheme} onChange={updateField}>{noteSchemes.map((item) => <option key={item}>{item}</option>)}</select></label>
           </div>
           <div className="notes-section-title">Your details</div>
@@ -400,7 +402,7 @@ function NotesPage({ user }) {
   const apiBaseUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001')
     : '/api';
-  const [filters, setFilters] = useState({ department: '', semester: '', subject: '', scheme: '' });
+  const [filters, setFilters] = useState({ department: '', semester: '', subject: '', module_no: '', scheme: '' });
   const [notes, setNotes] = useState([]);
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -430,7 +432,7 @@ function NotesPage({ user }) {
     setFilters((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
   const groupedNotes = notes.reduce((groups, note) => {
-    const category = `${note.department} / ${note.semester} / ${note.subject} / Scheme ${note.scheme}`;
+    const category = `${note.department} / ${note.semester} / ${note.subject} / ${note.module_no} / Scheme ${note.scheme}`;
     groups[category] = [...(groups[category] || []), note];
     return groups;
   }, {});
@@ -448,6 +450,7 @@ function NotesPage({ user }) {
           <select name="department" value={filters.department} onChange={updateFilter} aria-label="Filter by department"><option value="">All departments</option>{noteDepartments.map((item) => <option key={item}>{item}</option>)}</select>
           <select name="semester" value={filters.semester} onChange={updateFilter} aria-label="Filter by semester"><option value="">All semesters</option>{noteSemesters.map((item) => <option key={item}>{item}</option>)}</select>
           <input name="subject" value={filters.subject} onChange={updateFilter} placeholder="Filter subject" aria-label="Filter by subject" />
+          <input name="module_no" value={filters.module_no} onChange={updateFilter} placeholder="Filter module" aria-label="Filter by module number" />
           <select name="scheme" value={filters.scheme} onChange={updateFilter} aria-label="Filter by scheme"><option value="">All schemes</option>{noteSchemes.map((item) => <option key={item}>{item}</option>)}</select>
         </div>
         {status && <div className="notes-status error" role="alert">{status}</div>}
