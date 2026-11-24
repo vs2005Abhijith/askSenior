@@ -317,9 +317,9 @@ function AddNotesPage({ user }) {
     subject: '',
     module_no: '',
     scheme: '2024',
-    uploader_name: user.displayName || '',
+    uploader_name: '',
     uploader_semester: 'S5',
-    uploader_college: 'RIT Kottayam',
+    uploader_college: '',
   });
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState({ type: '', text: '' });
@@ -385,9 +385,9 @@ function AddNotesPage({ user }) {
           </div>
           <div className="notes-section-title">Your details</div>
           <div className="notes-fields-grid">
-            <label className="notes-field">Your name<input name="uploader_name" value={fields.uploader_name} onChange={updateField} placeholder="Your name" required /></label>
+            <label className="notes-field">Your name<input name="uploader_name" value={fields.uploader_name} onChange={updateField} placeholder="e.g. Your name" required /></label>
             <label className="notes-field">Your semester<select name="uploader_semester" value={fields.uploader_semester} onChange={updateField}>{noteSemesters.map((item) => <option key={item}>{item}</option>)}</select></label>
-            <label className="notes-field notes-field-wide">College<input name="uploader_college" value={fields.uploader_college} onChange={updateField} placeholder="College name" required /></label>
+            <label className="notes-field notes-field-wide">College<input name="uploader_college" value={fields.uploader_college} onChange={updateField} placeholder="e.g. College name" required /></label>
           </div>
           <label className="notes-file-field">PDF file<input type="file" accept="application/pdf,.pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} required /><span>{file ? file.name : 'Choose a PDF, up to 10 MB'}</span></label>
           <button className="notes-submit-btn" type="submit" disabled={isUploading}>{isUploading ? 'Uploading note...' : 'Upload note'}</button>
